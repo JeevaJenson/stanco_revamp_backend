@@ -5,6 +5,7 @@ import com.stanco.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
@@ -26,6 +26,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -35,6 +36,9 @@ public class SecurityConfig {
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
         private final CustomUserDetailsService customUserDetailsService;
+
+        @Value("${app.cors.allowed-origins}")
+        private String allowedOrigins;
 
         @Bean
         public PasswordEncoder passwordEncoder() {
@@ -59,8 +63,7 @@ public class SecurityConfig {
                         AuthenticationConfiguration configuration)
                         throws Exception {
 
-                return configuration
-                                .getAuthenticationManager();
+                return configuration.getAuthenticationManager();
         }
 
         @Bean
@@ -68,9 +71,14 @@ public class SecurityConfig {
 
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(
-                                List.of(
-                                                "http://localhost:5173"));
+                // Read origins from application.properties
+                List<String> origins = Arrays.stream(
+                                allowedOrigins.split(","))
+                                .map(String::trim)
+                                .filter(origin -> !origin.isBlank())
+                                .toList();
+
+                configuration.setAllowedOrigins(origins);
 
                 configuration.setAllowedMethods(
                                 List.of(
@@ -85,8 +93,7 @@ public class SecurityConfig {
                                 List.of("*"));
 
                 configuration.setExposedHeaders(
-                                List.of(
-                                                "Authorization"));
+                                List.of("Authorization"));
 
                 configuration.setAllowCredentials(true);
 
