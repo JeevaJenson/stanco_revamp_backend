@@ -4,10 +4,12 @@ import com.stanco.dto.request.DepartmentRequest;
 import com.stanco.dto.response.DepartmentResponse;
 import com.stanco.service.DepartmentService;
 
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,51 +23,106 @@ public class DepartmentController {
 
     @PostMapping
     public ResponseEntity<DepartmentResponse> create(
-            @RequestBody DepartmentRequest request) {
+
+            @Valid
+            @RequestBody
+            DepartmentRequest request,
+
+            Authentication authentication) {
+
+        String empID =
+                authentication.getName();
 
         return ResponseEntity.ok(
-                service.create(request));
+                service.create(
+                        request,
+                        empID
+                )
+        );
     }
+
+
+
 
     @GetMapping
     public ResponseEntity<List<DepartmentResponse>> getAll() {
 
         return ResponseEntity.ok(
-                service.getAll());
+                service.getAll()
+        );
     }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<DepartmentResponse> getById(
-            @PathVariable Long id) {
+
+            @PathVariable
+            Long id) {
 
         return ResponseEntity.ok(
-                service.getById(id));
+                service.getById(id)
+        );
     }
+
+
 
     @GetMapping("/dep/{depId}")
     public ResponseEntity<DepartmentResponse> getByDepId(
-            @PathVariable String depId) {
+
+            @PathVariable
+            String depId) {
 
         return ResponseEntity.ok(
-                service.getByDepId(depId));
+                service.getByDepId(depId)
+        );
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<DepartmentResponse> update(
-            @PathVariable Long id,
-            @RequestBody DepartmentRequest request) {
+
+            @PathVariable
+            Long id,
+
+            @Valid
+            @RequestBody
+            DepartmentRequest request,
+
+            Authentication authentication) {
+
+        String empID =
+                authentication.getName();
 
         return ResponseEntity.ok(
-                service.update(id, request));
+                service.update(
+                        id,
+                        request,
+                        empID
+                )
+        );
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(
-            @PathVariable Long id) {
 
-        service.delete(id);
+            @PathVariable
+            Long id,
+
+            Authentication authentication) {
+
+        String empID =
+                authentication.getName();
+
+        service.delete(
+                id,
+                empID
+        );
 
         return ResponseEntity.ok(
-                "Department deleted successfully");
+                "Department deleted successfully"
+        );
     }
 }
