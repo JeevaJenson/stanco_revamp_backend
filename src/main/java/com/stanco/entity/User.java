@@ -2,9 +2,14 @@ package com.stanco.entity;
 
 import com.stanco.enums.Status;
 import com.stanco.enums.StatusConverter;
-import jakarta.persistence.Convert;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -86,6 +91,7 @@ public class User {
             nullable = false
     )
     private String roleType;
+
 
     @Convert(
             converter = StatusConverter.class

@@ -24,6 +24,9 @@ import org.springframework.security.core.Authentication;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl
@@ -39,6 +42,8 @@ public class AuthServiceImpl
     @Override
     public AuthResponse login(
             LoginRequest request) {
+
+
 
         User user =
                 userRepository
@@ -59,6 +64,8 @@ public class AuthServiceImpl
                     "User is inactive"
             );
         }
+
+
 
 
         Authentication authentication =
@@ -84,12 +91,45 @@ public class AuthServiceImpl
                                 )
                         );
 
+
         String token =
                 jwtService.generateToken(
+
                         authenticatedUser.getEmpID(),
+
                         authenticatedUser.getName(),
+
                         authenticatedUser.getRoleType()
                 );
+
+
+
+        if (request.isRememberMe()) {
+
+            String rememberToken =
+                    UUID.randomUUID()
+                            .toString();
+
+            authenticatedUser.setRememberToken(
+                    rememberToken
+            );
+
+        } else {
+
+            authenticatedUser.setRememberToken(
+                    null
+            );
+        }
+
+
+        authenticatedUser.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+
+        userRepository.save(
+                authenticatedUser
+        );
 
         return new AuthResponse(
 
