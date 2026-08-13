@@ -26,11 +26,11 @@ public class StatusConverter
             return null;
         }
 
-        if ("01".equals(code)) {
+        if ("1".equals(code)) {
             return Status.active;
         }
 
-        if ("02".equals(code)) {
+        if ("0".equals(code)) {
             return Status.inactive;
         }
 

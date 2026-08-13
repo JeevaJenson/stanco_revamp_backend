@@ -14,7 +14,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,187 +25,168 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter
-            jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private final CustomUserDetailsService
-            customUserDetailsService;
+        private final CustomUserDetailsService customUserDetailsService;
 
+        @Bean
+        public PasswordEncoder passwordEncoder() {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public DaoAuthenticationProvider authenticationProvider() {
 
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider(
+                                customUserDetailsService);
 
-    @Bean
-    public DaoAuthenticationProvider
-    authenticationProvider() {
+                provider.setPasswordEncoder(
+                                passwordEncoder());
 
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(
-                        customUserDetailsService
-                );
+                return provider;
+        }
 
-        provider.setPasswordEncoder(
-                passwordEncoder()
-        );
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration configuration)
+                        throws Exception {
 
-        return provider;
-    }
+                return configuration
+                                .getAuthenticationManager();
+        }
 
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-    @Bean
-    public AuthenticationManager
-    authenticationManager(
-            AuthenticationConfiguration configuration)
-            throws Exception {
+                CorsConfiguration configuration = new CorsConfiguration();
 
-        return configuration
-                .getAuthenticationManager();
-    }
+                configuration.setAllowedOrigins(
+                                List.of(
+                                                "http://localhost:5173"));
 
+                configuration.setAllowedMethods(
+                                List.of(
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "DELETE",
+                                                "PATCH",
+                                                "OPTIONS"));
 
-    @Bean
-    public SecurityFilterChain
-    securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
+                configuration.setAllowedHeaders(
+                                List.of("*"));
 
-        http
+                configuration.setExposedHeaders(
+                                List.of(
+                                                "Authorization"));
 
-                .csrf(csrf ->
-                        csrf.disable()
-                )
+                configuration.setAllowCredentials(true);
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-                .authenticationProvider(
-                        authenticationProvider()
-                )
+                source.registerCorsConfiguration(
+                                "/**",
+                                configuration);
 
-                .authorizeHttpRequests(auth -> auth
+                return source;
+        }
 
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http)
+                        throws Exception {
 
-                .requestMatchers(
-        "/swagger",
-        "/swagger/**",
-        "/swagger-ui/**",
-        "/v3/api-docs/**",
-        "/api-docs/**"
-)
-.permitAll()
-                        
-                        .requestMatchers(
-                                "/api/auth/**"
-                        )
-                        .permitAll()
+                http
 
+                                .csrf(csrf -> csrf.disable())
 
-                        
+                                .cors(cors -> cors.configurationSource(
+                                                corsConfigurationSource()))
 
-                        .requestMatchers(
-                                "/api/users/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin",
-                                "delivery_lead"
-                        )
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
+                                .authenticationProvider(
+                                                authenticationProvider())
 
-                       
+                                .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers(
-                                "/api/departments/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin"
-                        )
+                                                .requestMatchers(
+                                                                "/swagger",
+                                                                "/swagger/**",
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/api-docs/**")
+                                                .permitAll()
 
+                                                .requestMatchers(
+                                                                "/api/auth/**")
+                                                .permitAll()
 
-                        
-                        .requestMatchers(
-                                "/api/designations/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin"
-                        )
+                                                .requestMatchers(
+                                                                "/api/users/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead")
 
+                                                .requestMatchers(
+                                                                "/api/departments/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
 
-                       
-                        .requestMatchers(
-                                "/api/business-masters/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin"
-                        )
+                                                .requestMatchers(
+                                                                "/api/designations/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
 
+                                                .requestMatchers(
+                                                                "/api/business-masters/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
 
-                
+                                                .requestMatchers(
+                                                                "/api/rfh/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead",
+                                                                "recruiter")
 
-                        .requestMatchers(
-                                "/api/rfh/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin",
-                                "delivery_lead",
-                                "recruiter"
-                        )
+                                                .requestMatchers(
+                                                                "/api/rfh-revenue-details/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead",
+                                                                "recruiter")
 
+                                                .requestMatchers(
+                                                                "/api/candidates/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin",
+                                                                "delivery_lead",
+                                                                "recruiter")
 
-                
+                                                .anyRequest()
+                                                .authenticated())
 
-                        .requestMatchers(
-                                "/api/rfh-revenue-details/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin",
-                                "delivery_lead",
-                                "recruiter"
-                        )
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
-
-                
-                        .requestMatchers(
-                                "/api/candidates/**"
-                        )
-                        .hasAnyRole(
-                                "super_admin",
-                                "admin",
-                                "delivery_lead",
-                                "recruiter"
-                        )
-
-
-                       
-
-                        .anyRequest()
-                        .authenticated()
-                )
-
-                .addFilterBefore(
-                        jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
-                );
-
-
-        return http.build();
-    }
+                return http.build();
+        }
 }

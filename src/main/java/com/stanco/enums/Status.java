@@ -2,8 +2,8 @@ package com.stanco.enums;
 
 public enum Status {
 
-    active("01"),
-    inactive("02");
+    active("1"),
+    inactive("0");
 
     private final String code;
 
