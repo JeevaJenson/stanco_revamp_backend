@@ -9,15 +9,13 @@ import lombok.Data;
 @Data
 public class DepartmentRequest {
 
-    @NotBlank
+    @NotBlank(message = "Department ID is required")
     private String depId;
 
-    @NotBlank
+
+    @NotBlank(message = "Department name is required")
     private String name;
 
+
     private Status status;
-
-    private String createdBy;
-
-    private String updatedBy;
 }

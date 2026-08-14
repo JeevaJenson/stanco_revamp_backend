@@ -23,12 +23,21 @@ import java.util.List;
 public class DepartmentServiceImpl
         implements DepartmentService {
 
+
     private final DepartmentRepository repository;
 
 
+    // ==========================================
+    // CREATE
+    // ==========================================
+
     @Override
     public DepartmentResponse create(
-            DepartmentRequest request) {
+
+            DepartmentRequest request,
+
+            String createdBy) {
+
 
         if (repository.existsByDepId(
                 request.getDepId())) {
@@ -53,6 +62,7 @@ public class DepartmentServiceImpl
                 request.getName()
         );
 
+
         department.setStatus(
                 request.getStatus() != null
                         ? request.getStatus()
@@ -60,8 +70,9 @@ public class DepartmentServiceImpl
         );
 
 
+        // JWT logged-in user
         department.setCreatedBy(
-                request.getCreatedBy()
+                createdBy
         );
 
 
@@ -83,17 +94,24 @@ public class DepartmentServiceImpl
     }
 
 
+    // ==========================================
+    // GET ALL
+    // ==========================================
+
     @Override
     public List<DepartmentResponse> getAll() {
 
-        return repository.findByStatus(
-                        Status.active
-                )
+        return repository
+                .findByStatus(Status.active)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
+
+    // ==========================================
+    // GET BY ID
+    // ==========================================
 
     @Override
     public DepartmentResponse getById(
@@ -115,6 +133,9 @@ public class DepartmentServiceImpl
     }
 
 
+    // ==========================================
+    // GET BY DEPARTMENT ID
+    // ==========================================
 
     @Override
     public DepartmentResponse getByDepId(
@@ -136,10 +157,19 @@ public class DepartmentServiceImpl
     }
 
 
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
     @Override
     public DepartmentResponse update(
+
             Long id,
-            DepartmentRequest request) {
+
+            DepartmentRequest request,
+
+            String updatedBy) {
+
 
         Department department =
                 repository.findById(id)
@@ -166,32 +196,34 @@ public class DepartmentServiceImpl
             department.setStatus(
                     request.getStatus()
             );
+
+
+            if (request.getStatus()
+                    == Status.active) {
+
+                department.setDeletedAt(null);
+            }
+
+
+            if (request.getStatus()
+                    == Status.inactive) {
+
+                department.setDeletedAt(
+                        LocalDateTime.now()
+                );
+            }
         }
 
 
+        // JWT logged-in user
         department.setUpdatedBy(
-                request.getUpdatedBy()
+                updatedBy
         );
 
 
         department.setUpdatedAt(
                 LocalDateTime.now()
         );
-
-
-        if (request.getStatus() == Status.active) {
-
-            department.setDeletedAt(null);
-        }
-
-
-
-        if (request.getStatus() == Status.inactive) {
-
-            department.setDeletedAt(
-                    LocalDateTime.now()
-            );
-        }
 
 
         Department updated =
@@ -204,10 +236,17 @@ public class DepartmentServiceImpl
     }
 
 
+    // ==========================================
+    // DELETE - SOFT DELETE
+    // ==========================================
 
     @Override
     public void delete(
-            Long id) {
+
+            Long id,
+
+            String updatedBy) {
+
 
         Department department =
                 repository.findById(id)
@@ -218,6 +257,7 @@ public class DepartmentServiceImpl
                                 )
                         );
 
+
         department.setStatus(
                 Status.inactive
         );
@@ -225,6 +265,11 @@ public class DepartmentServiceImpl
 
         department.setDeletedAt(
                 LocalDateTime.now()
+        );
+
+
+        department.setUpdatedBy(
+                updatedBy
         );
 
 
@@ -237,7 +282,12 @@ public class DepartmentServiceImpl
     }
 
 
+    // ==========================================
+    // MAPPER
+    // ==========================================
+
     private DepartmentResponse mapToResponse(
+
             Department department) {
 
         return new DepartmentResponse(
