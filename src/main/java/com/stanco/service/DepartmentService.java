@@ -7,34 +7,24 @@ import java.util.List;
 
 public interface DepartmentService {
 
-    DepartmentResponse create(
-            DepartmentRequest request,
-            String createdBy
-    );
+        DepartmentResponse create(
+                        DepartmentRequest request,
+                        String createdBy);
 
+        List<DepartmentResponse> getAll();
 
-    List<DepartmentResponse> getAll();
+        DepartmentResponse getById(
+                        Long id);
 
+        DepartmentResponse getByDepId(
+                        String depId);
 
-    DepartmentResponse getById(
-            Long id
-    );
+        DepartmentResponse update(
+                        Long id,
+                        DepartmentRequest request,
+                        String updatedBy);
 
-
-    DepartmentResponse getByDepId(
-            String depId
-    );
-
-
-    DepartmentResponse update(
-            Long id,
-            DepartmentRequest request,
-            String updatedBy
-    );
-
-
-    void delete(
-            Long id,
-            String updatedBy
-    );
+        void delete(
+                        Long id,
+                        String updatedBy);
 }
