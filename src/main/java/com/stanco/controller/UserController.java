@@ -1,6 +1,7 @@
 package com.stanco.controller;
 
 import com.stanco.dto.request.CreateUserRequest;
+import com.stanco.dto.request.UpdateUserRequest;
 import com.stanco.dto.response.UserResponse;
 
 import com.stanco.service.UserService;
@@ -99,4 +100,31 @@ public ResponseEntity<UserResponse> createUser(
                 )
         );
     }
+
+    @PutMapping("/{id}")
+public ResponseEntity<UserResponse> updateUser(
+        @PathVariable Long id,
+        @Valid @RequestBody UpdateUserRequest request,
+        Authentication authentication) {
+
+    String updaterEmpID =
+            authentication.getName();
+
+    return ResponseEntity.ok(
+            userService.updateUser(
+                    id,
+                    request,
+                    updaterEmpID
+            )
+    );
+}
+
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteUser(
+        @PathVariable Long id) {
+
+    userService.deleteUser(id);
+
+    return ResponseEntity.noContent().build();
+}
 }

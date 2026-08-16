@@ -2,13 +2,14 @@ package com.stanco.dto.request;
 
 import com.stanco.enums.Status;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import lombok.Data;
 
 @Data
-public class CreateUserRequest {
+public class UpdateUserRequest {
 
     @NotBlank(message = "Employee ID is required")
     private String empID;
@@ -26,6 +27,7 @@ public class CreateUserRequest {
     private String lobDivision;
 
     @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
     private String email;
 
     @NotBlank(message = "Mobile number is required")
@@ -36,7 +38,6 @@ public class CreateUserRequest {
 
     private Status profileStatus;
 
-    @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must contain at least 6 characters")
     private String password;
 

@@ -1,6 +1,7 @@
 package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.CreateUserRequest;
+import com.stanco.dto.request.UpdateUserRequest;
 import com.stanco.dto.response.UserResponse;
 
 import com.stanco.entity.User;
@@ -279,4 +280,94 @@ public class UserServiceImpl
 
                                 user.getColorCode());
         }
+
+
+        @Override
+public UserResponse updateUser(
+        Long id,
+        UpdateUserRequest request,
+        String updaterEmpID) {
+
+    User updater = userRepository
+            .findByEmpID(updaterEmpID)
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Updater not found: " + updaterEmpID));
+
+    User user = userRepository
+            .findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Employee not found: " + id));
+
+    userRepository.findByEmpID(request.getEmpID())
+            .ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new RuntimeException(
+                            "Employee ID already exists");
+                }
+            });
+
+    userRepository.findByEmail(request.getEmail())
+            .ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new RuntimeException(
+                            "Email already exists");
+                }
+            });
+
+    user.setEmpID(request.getEmpID().trim());
+    user.setName(request.getName().trim());
+    user.setDesignation(request.getDesignation().trim());
+    user.setBusiness(request.getBusiness());
+    user.setDepartment(request.getDepartment());
+    user.setLobDivision(request.getLobDivision());
+    user.setEmail(request.getEmail().trim().toLowerCase());
+    user.setMobileNo(request.getMobileNo().trim());
+    user.setRoleType(request.getRoleType());
+    user.setProfileStatus(
+            request.getProfileStatus() != null
+                    ? request.getProfileStatus()
+                    : user.getProfileStatus()
+    );
+    user.setTeam(
+            request.getTeam() != null
+                    ? request.getTeam()
+                    : ""
+    );
+    user.setColorCode(
+            request.getColorCode() != null
+                    ? request.getColorCode()
+                    : ""
+    );
+
+
+    if (request.getPassword() != null
+            && !request.getPassword().isBlank()) {
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
+        );
+    }
+
+    user.setUpdatedAt(LocalDateTime.now());
+
+    User savedUser = userRepository.save(user);
+
+    return mapToResponse(savedUser);
+}
+
+@Override
+public void deleteUser(Long id) {
+
+    User user = userRepository
+            .findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Employee not found: " + id));
+
+    userRepository.delete(user);
+}
 }
