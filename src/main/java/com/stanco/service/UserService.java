@@ -8,24 +8,39 @@ import java.util.List;
 
 public interface UserService {
 
+
     UserResponse createUser(
             CreateUserRequest request,
             String creatorEmpID
     );
 
+
     List<UserResponse> getAllUsers();
 
-    UserResponse getUserById(Long id);
 
-    UserResponse getUserByEmpID(String empID);
+    UserResponse getUserById(
+            Long id
+    );
 
-    UserResponse getMyDetails(String empID);
+
+    UserResponse getUserByEmpID(
+            String empID
+    );
+
+
+    UserResponse getMyDetails(
+            String empID
+    );
+
 
     UserResponse updateUser(
-        Long id,
-        UpdateUserRequest request,
-        String updaterEmpID
-);
+            Long id,
+            UpdateUserRequest request,
+            String updaterEmpID
+    );
 
-void deleteUser(Long id);
+
+    void deleteUser(
+            Long id
+    );
 }
