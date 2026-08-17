@@ -152,6 +152,12 @@ public class SecurityConfig {
                                                                 "admin")
 
                                                 .requestMatchers(
+                                                                "/api/department-verticals/**")
+                                                .hasAnyRole(
+                                                                "super_admin",
+                                                                "admin")
+
+                                                .requestMatchers(
                                                                 "/api/designations/**")
                                                 .hasAnyRole(
                                                                 "super_admin",
