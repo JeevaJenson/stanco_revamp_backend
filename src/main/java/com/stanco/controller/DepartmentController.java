@@ -19,110 +19,82 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DepartmentController {
 
-    private final DepartmentService service;
+        private final DepartmentService service;
 
-    @PostMapping
-    public ResponseEntity<DepartmentResponse> create(
+        @PostMapping
+        public ResponseEntity<DepartmentResponse> create(
 
-            @Valid
-            @RequestBody
-            DepartmentRequest request,
+                        @Valid @RequestBody DepartmentRequest request,
 
-            Authentication authentication) {
+                        Authentication authentication
 
-        String empID =
-                authentication.getName();
+        ) {
 
-        return ResponseEntity.ok(
-                service.create(
-                        request,
-                        empID
-                )
-        );
-    }
+                String empID = authentication.getName();
 
+                return ResponseEntity.ok(
+                                service.create(
+                                                request,
+                                                empID));
+        }
 
+        @GetMapping
+        public ResponseEntity<List<DepartmentResponse>> getAll() {
 
+                return ResponseEntity.ok(
+                                service.getAll());
+        }
 
-    @GetMapping
-    public ResponseEntity<List<DepartmentResponse>> getAll() {
+        @GetMapping("/{id}")
+        public ResponseEntity<DepartmentResponse> getById(
 
-        return ResponseEntity.ok(
-                service.getAll()
-        );
-    }
+                        @PathVariable Long id) {
 
+                return ResponseEntity.ok(
+                                service.getById(id));
+        }
 
+        @GetMapping("/dep/{depId}")
+        public ResponseEntity<DepartmentResponse> getByDepId(
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DepartmentResponse> getById(
+                        @PathVariable String depId) {
 
-            @PathVariable
-            Long id) {
+                return ResponseEntity.ok(
+                                service.getByDepId(depId));
+        }
 
-        return ResponseEntity.ok(
-                service.getById(id)
-        );
-    }
+        @PutMapping("/{id}")
+        public ResponseEntity<DepartmentResponse> update(
 
+                        @PathVariable Long id,
 
+                        @Valid @RequestBody DepartmentRequest request,
 
-    @GetMapping("/dep/{depId}")
-    public ResponseEntity<DepartmentResponse> getByDepId(
+                        Authentication authentication) {
 
-            @PathVariable
-            String depId) {
+                String empID = authentication.getName();
 
-        return ResponseEntity.ok(
-                service.getByDepId(depId)
-        );
-    }
+                return ResponseEntity.ok(
+                                service.update(
+                                                id,
+                                                request,
+                                                empID));
+        }
 
+        @DeleteMapping("/{id}")
+        public ResponseEntity<String> delete(
 
+                        @PathVariable Long id,
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DepartmentResponse> update(
+                        Authentication authentication) {
 
-            @PathVariable
-            Long id,
+                String empID = authentication.getName();
 
-            @Valid
-            @RequestBody
-            DepartmentRequest request,
+                service.delete(
+                                id,
+                                empID);
 
-            Authentication authentication) {
-
-        String empID =
-                authentication.getName();
-
-        return ResponseEntity.ok(
-                service.update(
-                        id,
-                        request,
-                        empID
-                )
-        );
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(
-
-            @PathVariable
-            Long id,
-
-            Authentication authentication) {
-
-        String empID =
-                authentication.getName();
-
-        service.delete(
-                id,
-                empID
-        );
-
-        return ResponseEntity.ok(
-                "Department deleted successfully"
-        );
-    }
+                return ResponseEntity.ok(
+                                "Department deleted successfully");
+        }
 }

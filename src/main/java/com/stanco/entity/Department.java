@@ -6,9 +6,12 @@ import com.stanco.enums.StatusConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -45,6 +48,11 @@ public class Department {
     private Status status = Status.active;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "vertical_id")
+private Vertical vertical;
+
+
     @Column(
             name = "created_by",
             nullable = false
@@ -66,4 +74,6 @@ public class Department {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+
 }

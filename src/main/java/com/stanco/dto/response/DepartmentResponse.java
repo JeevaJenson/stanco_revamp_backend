@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+
 @Data
 @AllArgsConstructor
 public class DepartmentResponse {
@@ -18,6 +19,8 @@ public class DepartmentResponse {
     private String name;
 
     private Status status;
+
+    private Long verticalCount;
 
     private String createdBy;
 

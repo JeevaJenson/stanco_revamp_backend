@@ -2,9 +2,15 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.DepartmentRequest;
 import com.stanco.dto.response.DepartmentResponse;
+
 import com.stanco.entity.Department;
+import com.stanco.entity.Vertical;
+
 import com.stanco.enums.Status;
+
 import com.stanco.repository.DepartmentRepository;
+import com.stanco.repository.VerticalRepository;
+
 import com.stanco.service.DepartmentService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,30 +27,62 @@ public class DepartmentServiceImpl
 
     private final DepartmentRepository repository;
 
+    private final VerticalRepository verticalRepository;
 
-   
+
+
+
     @Override
     public DepartmentResponse create(
             DepartmentRequest request,
-            String createdBy) {
+            String createdBy
+    ) {
 
-        String depId = request.getDepId().trim();
-        String name = request.getName().trim();
+        String depId =
+                request.getDepId().trim();
 
+        String name =
+                request.getName().trim();
+
+
+     
 
         if (repository.existsByDepId(depId)) {
 
             throw new RuntimeException(
-                    "Department ID already exists: " + depId
+                    "Department ID already exists: "
+                            + depId
             );
         }
 
 
-        Department department = new Department();
+        Vertical vertical =
+                verticalRepository.findById(
+                        request.getVerticalId()
+                )
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Vertical not found: "
+                                        + request.getVerticalId()
+                        )
+                );
 
-        department.setDepId(depId);
 
-        department.setName(name);
+      
+
+        Department department =
+                new Department();
+
+
+        department.setDepId(
+                depId
+        );
+
+
+        department.setName(
+                name
+        );
+
 
         department.setStatus(
                 request.getStatus() != null
@@ -52,11 +90,23 @@ public class DepartmentServiceImpl
                         : Status.active
         );
 
-        department.setCreatedBy(createdBy);
+
+
+        department.setVertical(
+                vertical
+        );
+
+
+
+        department.setCreatedBy(
+                createdBy
+        );
+
 
         department.setCreatedAt(
                 LocalDateTime.now()
         );
+
 
         department.setUpdatedAt(
                 LocalDateTime.now()
@@ -64,10 +114,14 @@ public class DepartmentServiceImpl
 
 
         Department saved =
-                repository.save(department);
+                repository.save(
+                        department
+                );
 
 
-        return mapToResponse(saved);
+        return mapToResponse(
+                saved
+        );
     }
 
 
@@ -75,37 +129,43 @@ public class DepartmentServiceImpl
     @Override
     public List<DepartmentResponse> getAll() {
 
-        return repository.findAll()
+        return repository
+                .findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
 
-  
+   
 
     @Override
     public DepartmentResponse getById(
-            Long id) {
+            Long id
+    ) {
 
         Department department =
                 repository.findById(id)
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Department not found: " + id
+                                        "Department not found: "
+                                                + id
                                 )
                         );
 
 
-        return mapToResponse(department);
+        return mapToResponse(
+                department
+        );
     }
 
 
-
+   
 
     @Override
     public DepartmentResponse getByDepId(
-            String depId) {
+            String depId
+    ) {
 
         if (depId == null ||
                 depId.trim().isEmpty()) {
@@ -122,28 +182,37 @@ public class DepartmentServiceImpl
                 )
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Department not found: " + depId
+                                "Department not found: "
+                                        + depId
                         )
                 );
 
 
-        return mapToResponse(department);
+        return mapToResponse(
+                department
+        );
     }
 
 
-
+    
 
     @Override
     public DepartmentResponse update(
+
             Long id,
+
             DepartmentRequest request,
-            String updatedBy) {
+
+            String updatedBy
+
+    ) {
 
         Department department =
                 repository.findById(id)
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Department not found: " + id
+                                        "Department not found: "
+                                                + id
                                 )
                         );
 
@@ -155,11 +224,15 @@ public class DepartmentServiceImpl
                 request.getName().trim();
 
 
+        
+
         if (!newDepId.equals(
                 department.getDepId()
         )
                 &&
-                repository.existsByDepId(newDepId)) {
+                repository.existsByDepId(
+                        newDepId
+                )) {
 
             throw new RuntimeException(
                     "Department ID already exists: "
@@ -168,12 +241,37 @@ public class DepartmentServiceImpl
         }
 
 
-        department.setDepId(newDepId);
+       
 
-        department.setName(newName);
+        Vertical vertical =
+                verticalRepository.findById(
+                        request.getVerticalId()
+                )
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Vertical not found: "
+                                        + request.getVerticalId()
+                        )
+                );
 
 
 
+        department.setDepId(
+                newDepId
+        );
+
+
+        department.setName(
+                newName
+        );
+
+
+        department.setVertical(
+                vertical
+        );
+
+
+      
 
         if (request.getStatus() != null) {
 
@@ -185,21 +283,32 @@ public class DepartmentServiceImpl
             if (request.getStatus()
                     == Status.active) {
 
-                department.setDeletedAt(null);
+                department.setDeletedAt(
+                        null
+                );
             }
 
 
             if (request.getStatus()
                     == Status.inactive) {
 
-                department.setDeletedAt(
-                        LocalDateTime.now()
-                );
+                if (department.getDeletedAt()
+                        == null) {
+
+                    department.setDeletedAt(
+                            LocalDateTime.now()
+                    );
+                }
             }
         }
 
 
-        department.setUpdatedBy(updatedBy);
+      
+
+        department.setUpdatedBy(
+                updatedBy
+        );
+
 
         department.setUpdatedAt(
                 LocalDateTime.now()
@@ -207,25 +316,34 @@ public class DepartmentServiceImpl
 
 
         Department updated =
-                repository.save(department);
+                repository.save(
+                        department
+                );
 
 
-        return mapToResponse(updated);
+        return mapToResponse(
+                updated
+        );
     }
 
 
-   
+
 
     @Override
     public void delete(
+
             Long id,
-            String updatedBy) {
+
+            String updatedBy
+
+    ) {
 
         Department department =
                 repository.findById(id)
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "Department not found: " + id
+                                        "Department not found: "
+                                                + id
                                 )
                         );
 
@@ -250,12 +368,50 @@ public class DepartmentServiceImpl
         );
 
 
-        repository.save(department);
+        repository.save(
+                department
+        );
     }
 
 
+
+
     private DepartmentResponse mapToResponse(
-            Department department) {
+
+            Department department
+
+    ) {
+
+        Long verticalId = null;
+
+        String verticalName = null;
+
+        Long verticalCount = 0L;
+
+
+        
+        if (department.getVertical() != null) {
+
+            verticalId =
+                    department
+                            .getVertical()
+                            .getId();
+
+
+            verticalName =
+                    department
+                            .getVertical()
+                            .getVerticalName();
+
+
+            verticalCount =
+                    repository
+                            .countByVertical_IdAndStatus(
+                                    verticalId,
+                                    Status.active
+                            );
+        }
+
 
         return new DepartmentResponse(
 
@@ -266,6 +422,12 @@ public class DepartmentServiceImpl
                 department.getName(),
 
                 department.getStatus(),
+
+                verticalId,
+
+                verticalName,
+
+                verticalCount,
 
                 department.getCreatedBy(),
 
