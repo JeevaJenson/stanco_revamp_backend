@@ -16,12 +16,14 @@ import com.stanco.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DepartmentServiceImpl
                 implements DepartmentService {
 
@@ -70,11 +72,13 @@ public class DepartmentServiceImpl
                 department.setCreatedBy(
                                 createdBy);
 
+                LocalDateTime now = LocalDateTime.now();
+
                 department.setCreatedAt(
-                                LocalDateTime.now());
+                                now);
 
                 department.setUpdatedAt(
-                                LocalDateTime.now());
+                                now);
 
                 Department saved = repository.save(
                                 department);
@@ -84,6 +88,7 @@ public class DepartmentServiceImpl
         }
 
         @Override
+        @Transactional(readOnly = true)
         public List<DepartmentResponse> getAll() {
 
                 return repository
@@ -94,6 +99,7 @@ public class DepartmentServiceImpl
         }
 
         @Override
+        @Transactional(readOnly = true)
         public DepartmentResponse getById(
                         Long id) {
 
@@ -107,6 +113,7 @@ public class DepartmentServiceImpl
         }
 
         @Override
+        @Transactional(readOnly = true)
         public DepartmentResponse getByDepId(
                         String depId) {
 
@@ -274,6 +281,10 @@ public class DepartmentServiceImpl
                                 department.getName(),
 
                                 department.getStatus(),
+
+                                verticalId,
+
+                                verticalName,
 
                                 verticalCount,
 

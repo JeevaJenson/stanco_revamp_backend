@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-
 @Data
 @AllArgsConstructor
 public class DepartmentResponse {
@@ -19,6 +18,11 @@ public class DepartmentResponse {
     private String name;
 
     private Status status;
+
+    // Vertical mapping
+    private Long verticalId;
+
+    private String verticalName;
 
     private Long verticalCount;
 

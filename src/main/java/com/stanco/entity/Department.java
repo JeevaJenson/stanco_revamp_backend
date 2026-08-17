@@ -3,16 +3,7 @@ package com.stanco.entity;
 import com.stanco.enums.Status;
 import com.stanco.enums.StatusConverter;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,14 +22,11 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(name = "dep_id")
     private String depId;
 
-
     @Column(nullable = false)
     private String name;
-
 
     @Convert(converter = StatusConverter.class)
     @Column(
@@ -49,8 +37,8 @@ public class Department {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "vertical_id")
-private Vertical vertical;
+    @JoinColumn(name = "vertical_id")
+    private Vertical vertical;
 
 
     @Column(
@@ -59,21 +47,15 @@ private Vertical vertical;
     )
     private String createdBy;
 
-
     @Column(name = "updated_by")
     private String updatedBy;
-
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-
 }
