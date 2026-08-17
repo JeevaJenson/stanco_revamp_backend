@@ -1,5 +1,8 @@
 package com.stanco.entity;
 
+import com.stanco.enums.Status;
+import com.stanco.enums.StatusConverter;
+
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -27,9 +30,31 @@ public class Vertical {
     )
     private String verticalName;
 
+    @Convert(converter = StatusConverter.class)
+    @Column(
+            nullable = false,
+            length = 2
+    )
+    private Status status = Status.active;
+
+    @Column(
+            name = "created_by",
+            nullable = false
+    )
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    @Column(name = "deleted_by")
+    private String deletedBy;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

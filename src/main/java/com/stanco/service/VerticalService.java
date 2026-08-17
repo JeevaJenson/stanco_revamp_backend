@@ -8,7 +8,8 @@ import java.util.List;
 public interface VerticalService {
 
     VerticalResponse create(
-            VerticalRequest request
+            VerticalRequest request,
+            String createdBy
     );
 
     List<VerticalResponse> getAll();
@@ -23,10 +24,12 @@ public interface VerticalService {
 
     VerticalResponse update(
             Long id,
-            VerticalRequest request
+            VerticalRequest request,
+            String updatedBy
     );
 
     void delete(
-            Long id
+            Long id,
+            String deletedBy
     );
 }

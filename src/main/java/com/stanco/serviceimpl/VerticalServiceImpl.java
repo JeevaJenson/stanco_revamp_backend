@@ -5,6 +5,8 @@ import com.stanco.dto.response.VerticalResponse;
 
 import com.stanco.entity.Vertical;
 
+import com.stanco.enums.Status;
+
 import com.stanco.repository.VerticalRepository;
 
 import com.stanco.service.VerticalService;
@@ -19,185 +21,194 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class VerticalServiceImpl
-        implements VerticalService {
+                implements VerticalService {
 
-    private final VerticalRepository repository;
- 
+        private final VerticalRepository repository;
 
-    @Override
-    public VerticalResponse create(
-            VerticalRequest request) {
+        @Override
+        public VerticalResponse create(
+                        VerticalRequest request,
+                        String createdBy) {
 
-        if (repository.existsByVerticalName(
-                request.getVerticalName())) {
+                String name = request.getVerticalName().trim();
 
-            throw new RuntimeException(
-                    "Vertical already exists: "
-                            + request.getVerticalName()
-            );
+                if (repository.existsByVerticalName(name)) {
+
+                        throw new RuntimeException(
+                                        "Vertical already exists: "
+                                                        + name);
+                }
+
+                Vertical vertical = new Vertical();
+
+                vertical.setVerticalName(name);
+
+                vertical.setStatus(
+                                request.getStatus() != null
+                                                ? request.getStatus()
+                                                : Status.active);
+
+                vertical.setCreatedBy(createdBy);
+
+                vertical.setCreatedAt(
+                                LocalDateTime.now());
+
+                vertical.setUpdatedAt(
+                                LocalDateTime.now());
+
+                Vertical saved = repository.save(vertical);
+
+                return mapToResponse(saved);
         }
 
+        @Override
+        public List<VerticalResponse> getAll() {
 
-        Vertical vertical =
-                new Vertical();
-
-
-        vertical.setVerticalName(
-                request.getVerticalName()
-        );
-
-
-        vertical.setCreatedAt(
-                LocalDateTime.now()
-        );
-
-
-        vertical.setUpdatedAt(
-                LocalDateTime.now()
-        );
-
-
-        Vertical saved =
-                repository.save(vertical);
-
-
-        return mapToResponse(saved);
-    }
-
-
-    @Override
-    public List<VerticalResponse> getAll() {
-
-        return repository
-                .findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-
-
-    @Override
-    public VerticalResponse getById(
-            Long id) {
-
-        Vertical vertical =
-                repository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Vertical not found: "
-                                                + id
-                                )
-                        );
-
-
-        return mapToResponse(vertical);
-    }
-
-
-   
-
-    @Override
-    public VerticalResponse getByName(
-            String verticalName) {
-
-        Vertical vertical =
-                repository
-                        .findByVerticalName(
-                                verticalName
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Vertical not found: "
-                                                + verticalName
-                                )
-                        );
-
-
-        return mapToResponse(vertical);
-    }
-
-
-    @Override
-    public VerticalResponse update(
-            Long id,
-            VerticalRequest request) {
-
-        Vertical vertical =
-                repository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Vertical not found: "
-                                                + id
-                                )
-                        );
-
-
-        if (!vertical.getVerticalName()
-                .equals(request.getVerticalName())
-                &&
-                repository.existsByVerticalName(
-                        request.getVerticalName())) {
-
-            throw new RuntimeException(
-                    "Vertical already exists: "
-                            + request.getVerticalName()
-            );
+                return repository.findAll()
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
         }
 
+        @Override
+        public VerticalResponse getById(Long id) {
 
-        vertical.setVerticalName(
-                request.getVerticalName()
-        );
+                Vertical vertical = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Vertical not found: "
+                                                                + id));
 
+                return mapToResponse(vertical);
+        }
 
-        vertical.setUpdatedAt(
-                LocalDateTime.now()
-        );
+        @Override
+        public VerticalResponse getByName(
+                        String verticalName) {
 
+                if (verticalName == null ||
+                                verticalName.trim().isEmpty()) {
 
-        Vertical updated =
+                        throw new RuntimeException(
+                                        "Vertical name is required");
+                }
+
+                Vertical vertical = repository
+                                .findByVerticalName(
+                                                verticalName.trim())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Vertical not found: "
+                                                                + verticalName));
+
+                return mapToResponse(vertical);
+        }
+
+        @Override
+        public VerticalResponse update(
+                        Long id,
+                        VerticalRequest request,
+                        String updatedBy) {
+
+                Vertical vertical = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Vertical not found: "
+                                                                + id));
+
+                String newName = request.getVerticalName().trim();
+
+                if (!newName.equals(
+                                vertical.getVerticalName())
+                                &&
+                                repository.existsByVerticalName(
+                                                newName)) {
+
+                        throw new RuntimeException(
+                                        "Vertical already exists: "
+                                                        + newName);
+                }
+
+                vertical.setVerticalName(newName);
+
+                if (request.getStatus() != null) {
+
+                        vertical.setStatus(
+                                        request.getStatus());
+
+                        if (request.getStatus() == Status.active) {
+
+                                vertical.setDeletedAt(null);
+
+                                vertical.setDeletedBy(null);
+                        }
+
+                        if (request.getStatus() == Status.inactive) {
+
+                                vertical.setDeletedAt(
+                                                LocalDateTime.now());
+
+                                vertical.setDeletedBy(
+                                                updatedBy);
+                        }
+                }
+
+                vertical.setUpdatedBy(updatedBy);
+
+                vertical.setUpdatedAt(
+                                LocalDateTime.now());
+
+                Vertical updated = repository.save(vertical);
+
+                return mapToResponse(updated);
+        }
+
+        @Override
+        public void delete(
+                        Long id,
+                        String deletedBy) {
+
+                Vertical vertical = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Vertical not found: "
+                                                                + id));
+
+                vertical.setStatus(
+                                Status.inactive);
+
+                vertical.setDeletedBy(
+                                deletedBy);
+
+                vertical.setDeletedAt(
+                                LocalDateTime.now());
+
+                vertical.setUpdatedBy(
+                                deletedBy);
+
+                vertical.setUpdatedAt(
+                                LocalDateTime.now());
+
                 repository.save(vertical);
+        }
 
+        private VerticalResponse mapToResponse(
+                        Vertical vertical) {
 
-        return mapToResponse(updated);
-    }
+                return new VerticalResponse(
 
+                                vertical.getId(),
 
-    @Override
-    public void delete(
-            Long id) {
+                                vertical.getVerticalName(),
 
-        Vertical vertical =
-                repository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Vertical not found: "
-                                                + id
-                                )
-                        );
+                                vertical.getStatus(),
 
+                                vertical.getCreatedBy(),
 
-        repository.delete(vertical);
-    }
+                                vertical.getUpdatedBy(),
 
+                                vertical.getDeletedBy(),
 
+                                vertical.getCreatedAt(),
 
-    private VerticalResponse mapToResponse(
-            Vertical vertical) {
+                                vertical.getUpdatedAt(),
 
-        return new VerticalResponse(
-
-                vertical.getId(),
-
-                vertical.getVerticalName(),
-
-                vertical.getCreatedAt(),
-
-                vertical.getUpdatedAt()
-        );
-    }
+                                vertical.getDeletedAt());
+        }
 }

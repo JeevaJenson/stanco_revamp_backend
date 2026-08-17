@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VerticalController {
 
-    private final VerticalService verticalService;
-
+    private final VerticalService service;
 
 
     @PostMapping
@@ -29,37 +28,42 @@ public class VerticalController {
 
             @Valid
             @RequestBody
-            VerticalRequest request) {
+            VerticalRequest request,
+
+            Authentication authentication
+    ) {
+
+        String empID =
+                authentication.getName();
+
 
         return ResponseEntity.ok(
-                verticalService.create(
-                        request
+                service.create(
+                        request,
+                        empID
                 )
         );
     }
 
 
     @GetMapping
-    public ResponseEntity<
-            List<VerticalResponse>>
+    public ResponseEntity<List<VerticalResponse>>
     getAll() {
 
         return ResponseEntity.ok(
-                verticalService.getAll()
+                service.getAll()
         );
     }
-
 
 
     @GetMapping("/{id}")
     public ResponseEntity<VerticalResponse>
     getById(
-            @PathVariable Long id) {
+            @PathVariable Long id
+    ) {
 
         return ResponseEntity.ok(
-                verticalService.getById(
-                        id
-                )
+                service.getById(id)
         );
     }
 
@@ -67,12 +71,11 @@ public class VerticalController {
     @GetMapping("/name/{verticalName}")
     public ResponseEntity<VerticalResponse>
     getByName(
-            @PathVariable String verticalName) {
+            @PathVariable String verticalName
+    ) {
 
         return ResponseEntity.ok(
-                verticalService.getByName(
-                        verticalName
-                )
+                service.getByName(verticalName)
         );
     }
 
@@ -85,12 +88,20 @@ public class VerticalController {
 
             @Valid
             @RequestBody
-            VerticalRequest request) {
+            VerticalRequest request,
+
+            Authentication authentication
+    ) {
+
+        String empID =
+                authentication.getName();
+
 
         return ResponseEntity.ok(
-                verticalService.update(
+                service.update(
                         id,
-                        request
+                        request,
+                        empID
                 )
         );
     }
@@ -99,9 +110,21 @@ public class VerticalController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String>
     delete(
-            @PathVariable Long id) {
 
-        verticalService.delete(id);
+            @PathVariable Long id,
+
+            Authentication authentication
+    ) {
+
+        String empID =
+                authentication.getName();
+
+
+        service.delete(
+                id,
+                empID
+        );
+
 
         return ResponseEntity.ok(
                 "Vertical deleted successfully"

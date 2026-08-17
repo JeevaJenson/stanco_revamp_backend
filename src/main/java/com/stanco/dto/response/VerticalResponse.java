@@ -1,5 +1,7 @@
 package com.stanco.dto.response;
 
+import com.stanco.enums.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,7 +15,17 @@ public class VerticalResponse {
 
     private String verticalName;
 
+    private Status status;
+
+    private String createdBy;
+
+    private String updatedBy;
+
+    private String deletedBy;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 }
