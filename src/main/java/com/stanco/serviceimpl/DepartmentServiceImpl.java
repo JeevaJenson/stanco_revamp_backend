@@ -4,11 +4,13 @@ import com.stanco.dto.request.DepartmentRequest;
 import com.stanco.dto.response.DepartmentResponse;
 
 import com.stanco.entity.Department;
+import com.stanco.entity.DepartmentVertical;
 import com.stanco.entity.Vertical;
 
 import com.stanco.enums.Status;
 
 import com.stanco.repository.DepartmentRepository;
+import com.stanco.repository.DepartmentVerticalRepository;
 import com.stanco.repository.VerticalRepository;
 
 import com.stanco.service.DepartmentService;
@@ -25,277 +27,515 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class DepartmentServiceImpl
-                implements DepartmentService {
+        implements DepartmentService {
 
-        private final DepartmentRepository repository;
 
-        private final VerticalRepository verticalRepository;
+    private final DepartmentRepository repository;
 
-        @Override
-        public DepartmentResponse create(
-                        DepartmentRequest request,
-                        String createdBy) {
+    private final VerticalRepository verticalRepository;
 
-                String depId = request.getDepId().trim();
+    private final DepartmentVerticalRepository
+            departmentVerticalRepository;
 
-                String name = request.getName().trim();
 
-                if (repository.existsByDepId(depId)) {
+    
 
-                        throw new RuntimeException(
-                                        "Department ID already exists: "
-                                                        + depId);
-                }
+    @Override
+    public DepartmentResponse create(
+            DepartmentRequest request,
+            String createdBy
+    ) {
 
-                Vertical vertical = verticalRepository.findById(
-                                request.getVerticalId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Vertical not found: "
-                                                                + request.getVerticalId()));
 
-                Department department = new Department();
+        String depId =
+                request.getDepId().trim();
 
-                department.setDepId(
-                                depId);
+        String name =
+                request.getName().trim();
 
-                department.setName(
-                                name);
 
-                department.setStatus(
-                                request.getStatus() != null
-                                                ? request.getStatus()
-                                                : Status.active);
+   
 
-                department.setVertical(
-                                vertical);
+        if (repository.existsByDepId(depId)) {
 
-                department.setCreatedBy(
-                                createdBy);
-
-                LocalDateTime now = LocalDateTime.now();
-
-                department.setCreatedAt(
-                                now);
-
-                department.setUpdatedAt(
-                                now);
-
-                Department saved = repository.save(
-                                department);
-
-                return mapToResponse(
-                                saved);
+            throw new RuntimeException(
+                    "Department ID already exists: "
+                            + depId
+            );
         }
 
-        @Override
-        @Transactional(readOnly = true)
-        public List<DepartmentResponse> getAll() {
 
-                return repository
-                                .findAll()
-                                .stream()
-                                .map(this::mapToResponse)
-                                .toList();
-        }
+   
 
-        @Override
-        @Transactional(readOnly = true)
-        public DepartmentResponse getById(
-                        Long id) {
+        Vertical vertical =
+                verticalRepository
+                        .findById(
+                                request.getVerticalId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Vertical not found: "
+                                                + request.getVerticalId()
+                                )
+                        );
 
-                Department department = repository.findById(id)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Department not found: "
-                                                                + id));
 
-                return mapToResponse(
-                                department);
-        }
+   
 
-        @Override
-        @Transactional(readOnly = true)
-        public DepartmentResponse getByDepId(
-                        String depId) {
+        Department department =
+                new Department();
 
-                if (depId == null ||
-                                depId.trim().isEmpty()) {
 
-                        throw new RuntimeException(
-                                        "Department ID is required");
-                }
+        department.setDepId(
+                depId
+        );
 
-                Department department = repository.findByDepId(
-                                depId.trim())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Department not found: "
-                                                                + depId));
 
-                return mapToResponse(
-                                department);
-        }
+        department.setName(
+                name
+        );
 
-        @Override
-        public DepartmentResponse update(
 
-                        Long id,
+        department.setStatus(
+                request.getStatus() != null
+                        ? request.getStatus()
+                        : Status.active
+        );
 
-                        DepartmentRequest request,
 
-                        String updatedBy
+        department.setCreatedBy(
+                createdBy
+        );
 
+
+        LocalDateTime now =
+                LocalDateTime.now();
+
+
+        department.setCreatedAt(
+                now
+        );
+
+
+        department.setUpdatedAt(
+                now
+        );
+
+
+     
+
+        Department saved =
+                repository.save(
+                        department
+                );
+
+
+     
+
+        DepartmentVertical mapping =
+                new DepartmentVertical();
+
+
+        mapping.setDepartment(
+                saved
+        );
+
+
+        mapping.setVertical(
+                vertical
+        );
+
+
+        departmentVerticalRepository.save(
+                mapping
+        );
+
+
+     
+
+        return mapToResponse(
+                saved
+        );
+    }
+
+
+ 
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DepartmentResponse> getAll() {
+
+
+        return repository
+                .findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public DepartmentResponse getById(
+            Long id
+    ) {
+
+
+        Department department =
+                repository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
+
+
+        return mapToResponse(
+                department
+        );
+    }
+
+
+  
+
+    @Override
+    @Transactional(readOnly = true)
+    public DepartmentResponse getByDepId(
+            String depId
+    ) {
+
+
+        if (
+                depId == null ||
+                depId.trim().isEmpty()
         ) {
 
-                Department department = repository.findById(id)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Department not found: "
-                                                                + id));
-
-                String newDepId = request.getDepId().trim();
-
-                String newName = request.getName().trim();
-
-                if (!newDepId.equals(
-                                department.getDepId())
-                                &&
-                                repository.existsByDepId(
-                                                newDepId)) {
-
-                        throw new RuntimeException(
-                                        "Department ID already exists: "
-                                                        + newDepId);
-                }
-
-                Vertical vertical = verticalRepository.findById(
-                                request.getVerticalId())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Vertical not found: "
-                                                                + request.getVerticalId()));
-
-                department.setDepId(
-                                newDepId);
-
-                department.setName(
-                                newName);
-
-                department.setVertical(
-                                vertical);
-
-                if (request.getStatus() != null) {
-
-                        department.setStatus(
-                                        request.getStatus());
-
-                        if (request.getStatus() == Status.active) {
-
-                                department.setDeletedAt(
-                                                null);
-                        }
-
-                        if (request.getStatus() == Status.inactive) {
-
-                                if (department.getDeletedAt() == null) {
-
-                                        department.setDeletedAt(
-                                                        LocalDateTime.now());
-                                }
-                        }
-                }
-
-                department.setUpdatedBy(
-                                updatedBy);
-
-                department.setUpdatedAt(
-                                LocalDateTime.now());
-
-                Department updated = repository.save(
-                                department);
-
-                return mapToResponse(
-                                updated);
+            throw new RuntimeException(
+                    "Department ID is required"
+            );
         }
 
-        @Override
-        public void delete(
 
-                        Long id,
+        Department department =
+                repository
+                        .findByDepId(
+                                depId.trim()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + depId
+                                )
+                        );
 
-                        String updatedBy
 
+        return mapToResponse(
+                department
+        );
+    }
+
+
+   
+
+    @Override
+    public DepartmentResponse update(
+
+            Long id,
+
+            DepartmentRequest request,
+
+            String updatedBy
+
+    ) {
+
+
+       
+
+        Department department =
+                repository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
+
+
+        String newDepId =
+                request
+                        .getDepId()
+                        .trim();
+
+
+        String newName =
+                request
+                        .getName()
+                        .trim();
+
+
+    
+
+        if (
+                !newDepId.equals(
+                        department.getDepId()
+                )
+                &&
+                repository.existsByDepId(
+                        newDepId
+                )
         ) {
 
-                Department department = repository.findById(id)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Department not found: "
-                                                                + id));
+            throw new RuntimeException(
+                    "Department ID already exists: "
+                            + newDepId
+            );
+        }
 
-                department.setStatus(
-                                Status.inactive);
+
+  
+
+        Vertical vertical =
+                verticalRepository
+                        .findById(
+                                request.getVerticalId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Vertical not found: "
+                                                + request.getVerticalId()
+                                )
+                        );
+
+
+
+        department.setDepId(
+                newDepId
+        );
+
+
+        department.setName(
+                newName
+        );
+
+
+    
+
+        if (
+                request.getStatus() != null
+        ) {
+
+            department.setStatus(
+                    request.getStatus()
+            );
+
+
+            if (
+                    request.getStatus()
+                            == Status.active
+            ) {
 
                 department.setDeletedAt(
-                                LocalDateTime.now());
+                        null
+                );
+            }
 
-                department.setUpdatedBy(
-                                updatedBy);
 
-                department.setUpdatedAt(
-                                LocalDateTime.now());
+            if (
+                    request.getStatus()
+                            == Status.inactive
+            ) {
 
-                repository.save(
-                                department);
-        }
+                if (
+                        department.getDeletedAt()
+                                == null
+                ) {
 
-        private DepartmentResponse mapToResponse(
-
-                        Department department
-
-        ) {
-
-                Long verticalId = null;
-
-                String verticalName = null;
-
-                Long verticalCount = 0L;
-
-                if (department.getVertical() != null) {
-
-                        verticalId = department
-                                        .getVertical()
-                                        .getId();
-
-                        verticalName = department
-                                        .getVertical()
-                                        .getVerticalName();
-
-                        verticalCount = repository
-                                        .countByVertical_IdAndStatus(
-                                                        verticalId,
-                                                        Status.active);
+                    department.setDeletedAt(
+                            LocalDateTime.now()
+                    );
                 }
-
-                return new DepartmentResponse(
-
-                                department.getId(),
-
-                                department.getDepId(),
-
-                                department.getName(),
-
-                                department.getStatus(),
-
-                                verticalId,
-
-                                verticalName,
-
-                                verticalCount,
-
-                                department.getCreatedBy(),
-
-                                department.getUpdatedBy(),
-
-                                department.getCreatedAt(),
-
-                                department.getUpdatedAt(),
-
-                                department.getDeletedAt());
+            }
         }
+
+
+        department.setUpdatedBy(
+                updatedBy
+        );
+
+
+        department.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+
+   
+
+        Department updated =
+                repository.save(
+                        department
+                );
+
+
+      
+
+        List<DepartmentVertical> mappings =
+                departmentVerticalRepository
+                        .findByDepartment_Id(
+                                id
+                        );
+
+
+        // Remove old mappings
+
+        if (!mappings.isEmpty()) {
+
+            departmentVerticalRepository
+                    .deleteAll(
+                            mappings
+                    );
+        }
+
+
+      
+
+        DepartmentVertical newMapping =
+                new DepartmentVertical();
+
+
+        newMapping.setDepartment(
+                updated
+        );
+
+
+        newMapping.setVertical(
+                vertical
+        );
+
+
+        departmentVerticalRepository.save(
+                newMapping
+        );
+
+
+      
+
+        return mapToResponse(
+                updated
+        );
+    }
+
+
+   
+
+    @Override
+    public void delete(
+
+            Long id,
+
+            String updatedBy
+
+    ) {
+
+
+        Department department =
+                repository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Department not found: "
+                                                + id
+                                )
+                        );
+
+
+        department.setStatus(
+                Status.inactive
+        );
+
+
+        department.setDeletedAt(
+                LocalDateTime.now()
+        );
+
+
+        department.setUpdatedBy(
+                updatedBy
+        );
+
+
+        department.setUpdatedAt(
+                LocalDateTime.now()
+        );
+
+
+
+        List<DepartmentVertical> mappings =
+                departmentVerticalRepository
+                        .findByDepartment_Id(
+                                id
+                        );
+
+
+        if (!mappings.isEmpty()) {
+
+            departmentVerticalRepository
+                    .deleteAll(
+                            mappings
+                    );
+        }
+
+
+        repository.save(
+                department
+        );
+    }
+
+
+    // =====================================================
+    // MAP RESPONSE
+    // =====================================================
+
+    private DepartmentResponse mapToResponse(
+
+            Department department
+
+    ) {
+
+
+        Long verticalCount =
+                departmentVerticalRepository
+                        .countByDepartment_Id(
+                                department.getId()
+                        );
+
+
+        return new DepartmentResponse(
+
+                department.getId(),
+
+                department.getDepId(),
+
+                department.getName(),
+
+                department.getStatus(),
+
+                verticalCount,
+
+                department.getCreatedBy(),
+
+                department.getUpdatedBy(),
+
+                department.getCreatedAt(),
+
+                department.getUpdatedAt(),
+
+                department.getDeletedAt()
+
+        );
+    }
 }

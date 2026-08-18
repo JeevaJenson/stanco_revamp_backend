@@ -24,11 +24,13 @@ public class Vertical {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Column(
             name = "vertical_name",
             nullable = false
     )
     private String verticalName;
+
 
     @Convert(converter = StatusConverter.class)
     @Column(
@@ -37,23 +39,29 @@ public class Vertical {
     )
     private Status status = Status.active;
 
+
     @Column(
             name = "created_by",
             nullable = false
     )
     private String createdBy;
 
+
     @Column(name = "updated_by")
     private String updatedBy;
+
 
     @Column(name = "deleted_by")
     private String deletedBy;
 
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

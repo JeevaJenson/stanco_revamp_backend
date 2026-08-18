@@ -22,11 +22,14 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Column(name = "dep_id")
     private String depId;
 
+
     @Column(nullable = false)
     private String name;
+
 
     @Convert(converter = StatusConverter.class)
     @Column(
@@ -36,25 +39,24 @@ public class Department {
     private Status status = Status.active;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vertical_id")
-    private Vertical vertical;
-
-
     @Column(
             name = "created_by",
             nullable = false
     )
     private String createdBy;
 
+
     @Column(name = "updated_by")
     private String updatedBy;
+
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

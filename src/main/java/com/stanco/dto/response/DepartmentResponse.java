@@ -19,11 +19,6 @@ public class DepartmentResponse {
 
     private Status status;
 
-    // Vertical mapping
-    private Long verticalId;
-
-    private String verticalName;
-
     private Long verticalCount;
 
     private String createdBy;
