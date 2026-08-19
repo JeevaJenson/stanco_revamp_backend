@@ -149,7 +149,7 @@ public class SecurityConfig {
                                                                 "/api/departments/**")
                                                 .hasAnyRole(
                                                                 "super_admin",
-                                                                "admin")
+                                                                "admin", "delivery_lead")
 
                                                 .requestMatchers(
                                                                 "/api/department-verticals/**")
@@ -167,7 +167,7 @@ public class SecurityConfig {
                                                                 "/api/business-masters/**")
                                                 .hasAnyRole(
                                                                 "super_admin",
-                                                                "admin")
+                                                                "admin", "delivery_lead")
 
                                                 .requestMatchers(
                                                                 "/api/rfh/**")
