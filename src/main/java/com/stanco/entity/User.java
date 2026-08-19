@@ -115,6 +115,32 @@ public class User {
     private String rememberToken;
 
 
+    @Column(name = "team", nullable = false)
+    private String team;
+
+
+    @Column(
+            name = "team_status",
+            nullable = false
+    )
+    private Integer teamStatus = 1;
+
+
+    @Column(
+            name = "color_code",
+            nullable = false
+    )
+    private String colorCode;
+
+
+    @Column(name = "created_by")
+    private String createdBy;
+
+
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -123,16 +149,6 @@ public class User {
     private LocalDateTime updatedAt;
 
 
-    @Column(
-            name = "team",
-            nullable = false
-    )
-    private String team;
-
-
-    @Column(
-            name = "color_code",
-            nullable = false
-    )
-    private String colorCode;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

@@ -63,7 +63,8 @@ public class SecurityConfig {
                         AuthenticationConfiguration configuration)
                         throws Exception {
 
-                return configuration.getAuthenticationManager();
+                return configuration
+                                .getAuthenticationManager();
         }
 
         @Bean
@@ -71,14 +72,15 @@ public class SecurityConfig {
 
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                // Read origins from application.properties
                 List<String> origins = Arrays.stream(
                                 allowedOrigins.split(","))
                                 .map(String::trim)
-                                .filter(origin -> !origin.isBlank())
+                                .filter(
+                                                origin -> !origin.isBlank())
                                 .toList();
 
-                configuration.setAllowedOrigins(origins);
+                configuration.setAllowedOrigins(
+                                origins);
 
                 configuration.setAllowedMethods(
                                 List.of(
@@ -95,7 +97,8 @@ public class SecurityConfig {
                 configuration.setExposedHeaders(
                                 List.of("Authorization"));
 
-                configuration.setAllowCredentials(true);
+                configuration.setAllowCredentials(
+                                true);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
@@ -113,88 +116,103 @@ public class SecurityConfig {
 
                 http
 
-                                .csrf(csrf -> csrf.disable())
+                                .csrf(
+                                                csrf -> csrf.disable())
 
-                                .cors(cors -> cors.configurationSource(
-                                                corsConfigurationSource()))
+                                .cors(
+                                                cors -> cors.configurationSource(
+                                                                corsConfigurationSource()))
 
-                                .sessionManagement(session -> session.sessionCreationPolicy(
-                                                SessionCreationPolicy.STATELESS))
+                                .sessionManagement(
+                                                session -> session.sessionCreationPolicy(
+                                                                SessionCreationPolicy.STATELESS))
 
                                 .authenticationProvider(
                                                 authenticationProvider())
 
-                                .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(
+                                                auth -> auth
 
-                                                .requestMatchers(
-                                                                "/swagger",
-                                                                "/swagger/**",
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs/**",
-                                                                "/api-docs/**")
-                                                .permitAll()
+                                                                .requestMatchers(
+                                                                                "/swagger",
+                                                                                "/swagger/**",
+                                                                                "/swagger-ui/**",
+                                                                                "/v3/api-docs/**",
+                                                                                "/api-docs/**")
+                                                                .permitAll()
 
-                                                .requestMatchers(
-                                                                "/api/auth/**")
-                                                .permitAll()
+                                                                .requestMatchers(
+                                                                                "/api/auth/**")
+                                                                .permitAll()
 
-                                                .requestMatchers(
-                                                                "/api/users/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead")
+                                                                .requestMatchers(
+                                                                                "/api/users/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "hiring_manager",
+                                                                                "admin")
 
-                                                .requestMatchers(
-                                                                "/api/departments/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin", "delivery_lead")
+                                                                .requestMatchers(
+                                                                                "/api/teams/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "hiring_manager",
+                                                                                "admin")
 
-                                                .requestMatchers(
-                                                                "/api/department-verticals/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin")
+                                                                .requestMatchers(
+                                                                                "/api/departments/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager")
 
-                                                .requestMatchers(
-                                                                "/api/designations/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin")
+                                                                .requestMatchers(
+                                                                                "/api/department-verticals/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager")
 
-                                                .requestMatchers(
-                                                                "/api/business-masters/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin", "delivery_lead")
+                                                                .requestMatchers(
+                                                                                "/api/designations/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager")
 
-                                                .requestMatchers(
-                                                                "/api/rfh/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
+                                                                .requestMatchers(
+                                                                                "/api/business-masters/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager")
 
-                                                .requestMatchers(
-                                                                "/api/rfh-revenue-details/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
+                                                                .requestMatchers(
+                                                                                "/api/rfh/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager",
+                                                                                "recruiter")
 
-                                                .requestMatchers(
-                                                                "/api/candidates/**")
-                                                .hasAnyRole(
-                                                                "super_admin",
-                                                                "admin",
-                                                                "delivery_lead",
-                                                                "recruiter")
+                                                                .requestMatchers(
+                                                                                "/api/rfh-revenue-details/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager",
+                                                                                "recruiter")
 
-                                                .anyRequest()
-                                                .authenticated())
+                                                                .requestMatchers(
+                                                                                "/api/candidates/**")
+                                                                .hasAnyRole(
+                                                                                "super_admin",
+                                                                                "admin",
+                                                                                "hiring_manager",
+                                                                                "recruiter")
+
+                                                                .anyRequest()
+                                                                .authenticated())
 
                                 .addFilterBefore(
                                                 jwtAuthenticationFilter,

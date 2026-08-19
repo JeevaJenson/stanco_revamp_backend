@@ -26,6 +26,8 @@ public class UpdateUserRequest {
 
     private String lobDivision;
 
+    private String supervisor;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email")
     private String email;

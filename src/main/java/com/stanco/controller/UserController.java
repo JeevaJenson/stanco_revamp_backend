@@ -23,108 +23,106 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
+        private final UserService userService;
 
-    private final UserService userService;
+        @PostMapping
+        public ResponseEntity<UserResponse> createUser(
 
+                        @Valid @RequestBody CreateUserRequest request,
 
+                        Authentication authentication
 
-   @PostMapping
-public ResponseEntity<UserResponse> createUser(
-        @Valid
-        @RequestBody
-        CreateUserRequest request,
+        ) {
 
-        Authentication authentication) {
+                String creatorEmpID = authentication.getName();
 
-    String creatorEmpID =
-            authentication.getName();
+                return ResponseEntity.ok(
+                                userService.createUser(
+                                                request,
+                                                creatorEmpID));
+        }
 
-    return ResponseEntity.ok(
-            userService.createUser(
-                    request,
-                    creatorEmpID
-            )
-    );
-}
-  
+        @GetMapping
+        public ResponseEntity<List<UserResponse>> getAllUsers(
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>>
-    getAllUsers() {
+                        Authentication authentication
 
-        return ResponseEntity.ok(
-                userService.getAllUsers()
-        );
-    }
+        ) {
 
+                String empID = authentication.getName();
 
+                return ResponseEntity.ok(
+                                userService.getAllUsers(
+                                                empID));
+        }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse>
-    getMyDetails(
-            Authentication authentication) {
+        @GetMapping("/me")
+        public ResponseEntity<UserResponse> getMyDetails(
 
-        String empID =
-                authentication.getName();
+                        Authentication authentication
 
-        return ResponseEntity.ok(
-                userService.getMyDetails(
-                        empID
-                )
-        );
-    }
+        ) {
 
+                String empID = authentication.getName();
 
-    @GetMapping("/emp/{empID}")
-    public ResponseEntity<UserResponse>
-    getUserByEmpID(
-            @PathVariable String empID) {
+                return ResponseEntity.ok(
+                                userService.getMyDetails(
+                                                empID));
+        }
 
-        return ResponseEntity.ok(
-                userService.getUserByEmpID(
-                        empID
-                )
-        );
-    }
+        @GetMapping("/emp/{empID}")
+        public ResponseEntity<UserResponse> getUserByEmpID(
 
+                        @PathVariable String empID
 
+        ) {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse>
-    getUserById(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                userService.getUserByEmpID(
+                                                empID));
+        }
 
-        return ResponseEntity.ok(
-                userService.getUserById(
-                        id
-                )
-        );
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<UserResponse> getUserById(
 
-    @PutMapping("/{id}")
-public ResponseEntity<UserResponse> updateUser(
-        @PathVariable Long id,
-        @Valid @RequestBody UpdateUserRequest request,
-        Authentication authentication) {
+                        @PathVariable Long id
 
-    String updaterEmpID =
-            authentication.getName();
+        ) {
 
-    return ResponseEntity.ok(
-            userService.updateUser(
-                    id,
-                    request,
-                    updaterEmpID
-            )
-    );
-}
+                return ResponseEntity.ok(
+                                userService.getUserById(
+                                                id));
+        }
 
-@DeleteMapping("/{id}")
-public ResponseEntity<Void> deleteUser(
-        @PathVariable Long id) {
+        @PutMapping("/{id}")
+        public ResponseEntity<UserResponse> updateUser(
 
-    userService.deleteUser(id);
+                        @PathVariable Long id,
 
-    return ResponseEntity.noContent().build();
-}
+                        @Valid @RequestBody UpdateUserRequest request,
+
+                        Authentication authentication
+
+        ) {
+
+                String updaterEmpID = authentication.getName();
+
+                return ResponseEntity.ok(
+                                userService.updateUser(
+                                                id,
+                                                request,
+                                                updaterEmpID));
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteUser(
+
+                        @PathVariable Long id
+
+        ) {
+
+                userService.deleteUser(id);
+
+                return ResponseEntity.noContent().build();
+        }
 }

@@ -8,30 +8,20 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository
-        extends JpaRepository<User, Long> {
+                extends JpaRepository<User, Long> {
 
+        Optional<User> findByEmpID(
+                        String empID);
 
-    Optional<User> findByEmpID(
-            String empID
-    );
+        Optional<User> findByEmail(
+                        String email);
 
+        boolean existsByEmpID(
+                        String empID);
 
-    Optional<User> findByEmail(
-            String email
-    );
+        boolean existsByEmail(
+                        String email);
 
-
-    boolean existsByEmpID(
-            String empID
-    );
-
-
-    boolean existsByEmail(
-            String email
-    );
-
-    
-    List<User> findByTeamIgnoreCase(
-            String team
-    );
+        List<User> findByTeamIgnoreCase(
+                        String team);
 }

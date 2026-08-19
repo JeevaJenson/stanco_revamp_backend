@@ -4,11 +4,9 @@ public enum RoleType {
 
     super_admin,
 
+    hiring_manager,
+
     admin,
 
-    delivery_lead,
-
-    recruiter,
-
-    line_business_head
+    recruiter
 }

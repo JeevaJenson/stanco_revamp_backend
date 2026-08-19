@@ -4,722 +4,733 @@ import com.stanco.dto.request.CreateUserRequest;
 import com.stanco.dto.request.UpdateUserRequest;
 import com.stanco.dto.response.UserResponse;
 
-import com.stanco.entity.Team;
 import com.stanco.entity.User;
 
-import com.stanco.enums.RoleType;
 import com.stanco.enums.Status;
 
-import com.stanco.repository.TeamRepository;
 import com.stanco.repository.UserRepository;
-
 import com.stanco.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl
-        implements UserService {
+@Transactional
+public class UserServiceImpl implements UserService {
 
+        private final UserRepository userRepository;
 
-    private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
 
-    private final TeamRepository teamRepository;
+        @Override
+        public UserResponse createUser(
+                        CreateUserRequest request,
+                        String creatorEmpID) {
 
-    private final PasswordEncoder passwordEncoder;
+                User creator = userRepository
+                                .findByEmpID(creatorEmpID)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Creator not found: "
+                                                                + creatorEmpID));
 
+                String creatorRole = creator.getRoleType();
 
-    // =========================================================
-    // CREATE USER
-    // =========================================================
+                String requestedRole = request.getRoleType();
 
-    @Override
-    public UserResponse createUser(
-            CreateUserRequest request,
-            String creatorEmpID) {
-
-
-        User creator =
-                userRepository
-                        .findByEmpID(creatorEmpID)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Creator not found: "
-                                                + creatorEmpID
-                                )
-                        );
-
-
-        String creatorRole =
-                creator.getRoleType();
-
-
-        // -----------------------------------------------------
-        // ROLE VALIDATION
-        // -----------------------------------------------------
-
-        if (request.getRoleType() == null
-                || request.getRoleType().isBlank()) {
-
-            throw new RuntimeException(
-                    "Role type is required"
-            );
-        }
-
-
-        RoleType requestedRole;
-
-
-        try {
-
-            requestedRole =
-                    RoleType.valueOf(
-                            request.getRoleType()
-                    );
-
-        } catch (IllegalArgumentException e) {
-
-            throw new RuntimeException(
-                    "Invalid role type: "
-                            + request.getRoleType()
-            );
-        }
-
-
-        validateRoleHierarchy(
-                creatorRole,
-                requestedRole
-        );
-
-
-        // -----------------------------------------------------
-        // DUPLICATE EMP ID
-        // -----------------------------------------------------
-
-        if (userRepository
-                .existsByEmpID(
-                        request.getEmpID()
-                )) {
-
-            throw new RuntimeException(
-                    "Employee ID already exists"
-            );
-        }
-
-
-        // -----------------------------------------------------
-        // DUPLICATE EMAIL
-        // -----------------------------------------------------
-
-        if (userRepository
-                .existsByEmail(
-                        request.getEmail()
-                )) {
-
-            throw new RuntimeException(
-                    "Email already exists"
-            );
-        }
-
-
-        // -----------------------------------------------------
-        // VALIDATE ACTIVE TEAM
-        // -----------------------------------------------------
-
-        String teamName =
-                validateActiveTeam(
-                        request.getTeam()
-                );
-
-
-        // -----------------------------------------------------
-        // CREATE USER
-        // -----------------------------------------------------
-
-        User user =
-                new User();
-
-
-        user.setEmpID(
-                request.getEmpID()
-        );
-
-
-        user.setName(
-                request.getName()
-        );
-
-
-        user.setDesignation(
-                request.getDesignation()
-        );
-
-
-        user.setBusiness(
-                request.getBusiness()
-        );
-
-
-        user.setDepartment(
-                request.getDepartment()
-        );
-
-
-        user.setLobDivision(
-                request.getLobDivision()
-        );
-
-
-        user.setEmail(
-                request.getEmail()
-        );
-
-
-        user.setMobileNo(
-                request.getMobileNo()
-        );
-
-
-        user.setRoleType(
-                requestedRole.name()
-        );
-
-
-        user.setSupervisor(
-                creator.getEmpID()
-        );
-
-
-        user.setProfileStatus(
-                request.getProfileStatus() != null
-                        ? request.getProfileStatus()
-                        : Status.active
-        );
-
-
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.getPassword()
-                )
-        );
-
-
-        user.setTeam(
-                teamName
-        );
-
-
-        user.setColorCode(
-                request.getColorCode() != null
-                        ? request.getColorCode()
-                        : ""
-        );
-
-
-        user.setCreatedAt(
-                LocalDateTime.now()
-        );
-
-
-        user.setUpdatedAt(
-                LocalDateTime.now()
-        );
-
-
-        User savedUser =
-                userRepository.save(user);
-
-
-        return mapToResponse(
-                savedUser
-        );
-    }
-
-
-    // =========================================================
-    // GET ALL USERS
-    // =========================================================
-
-    @Override
-    public List<UserResponse>
-    getAllUsers() {
-
-
-        return userRepository
-                .findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-
-    // =========================================================
-    // GET USER BY ID
-    // =========================================================
-
-    @Override
-    public UserResponse getUserById(
-            Long id) {
-
-
-        User user =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Employee not found: "
-                                                + id
-                                )
-                        );
-
-
-        return mapToResponse(user);
-    }
-
-
-    // =========================================================
-    // GET USER BY EMP ID
-    // =========================================================
-
-    @Override
-    public UserResponse getUserByEmpID(
-            String empID) {
-
-
-        User user =
-                userRepository
-                        .findByEmpID(empID)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Employee not found: "
-                                                + empID
-                                )
-                        );
-
-
-        return mapToResponse(user);
-    }
-
-
-    // =========================================================
-    // GET MY DETAILS
-    // =========================================================
-
-    @Override
-    public UserResponse getMyDetails(
-            String empID) {
-
-
-        User user =
-                userRepository
-                        .findByEmpID(empID)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Employee not found: "
-                                                + empID
-                                )
-                        );
-
-
-        return mapToResponse(user);
-    }
-
-
-    // =========================================================
-    // UPDATE USER
-    // =========================================================
-
-    @Override
-    public UserResponse updateUser(
-            Long id,
-            UpdateUserRequest request,
-            String updaterEmpID) {
-
-
-        userRepository
-                .findByEmpID(updaterEmpID)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Updater not found: "
-                                        + updaterEmpID
-                        )
-                );
-
-
-        User user =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Employee not found: "
-                                                + id
-                                )
-                        );
-
-
-        // -----------------------------------------------------
-        // EMP ID DUPLICATE
-        // -----------------------------------------------------
-
-        userRepository
-                .findByEmpID(
-                        request.getEmpID()
-                )
-                .ifPresent(existing -> {
-
-                    if (!existing
-                            .getId()
-                            .equals(id)) {
+                if (requestedRole == null ||
+                                requestedRole.trim().isEmpty()) {
 
                         throw new RuntimeException(
-                                "Employee ID already exists"
-                        );
-                    }
-                });
+                                        "Role is required");
+                }
 
+                requestedRole = requestedRole
+                                .trim()
+                                .toLowerCase();
 
-        // -----------------------------------------------------
-        // EMAIL DUPLICATE
-        // -----------------------------------------------------
+                validateRoleHierarchy(
+                                creatorRole,
+                                requestedRole);
 
-        userRepository
-                .findByEmail(
-                        request.getEmail()
-                )
-                .ifPresent(existing -> {
+                String empID = request
+                                .getEmpID()
+                                .trim();
 
-                    if (!existing
-                            .getId()
-                            .equals(id)) {
+                if (userRepository.existsByEmpID(empID)) {
 
                         throw new RuntimeException(
-                                "Email already exists"
-                        );
-                    }
-                });
+                                        "Employee ID already exists: "
+                                                        + empID);
+                }
 
+                String email = request
+                                .getEmail()
+                                .trim()
+                                .toLowerCase();
 
-        // -----------------------------------------------------
-        // ACTIVE TEAM VALIDATION
-        // -----------------------------------------------------
+                if (userRepository.existsByEmail(email)) {
 
-        String teamName =
-                validateActiveTeam(
-                        request.getTeam()
-                );
+                        throw new RuntimeException(
+                                        "Email already exists: "
+                                                        + email);
+                }
 
+                String requestedTeam = request.getTeam();
 
-        // -----------------------------------------------------
-        // UPDATE USER
-        // -----------------------------------------------------
+                if (requestedTeam == null ||
+                                requestedTeam.trim().isEmpty()) {
 
-        user.setEmpID(
-                request.getEmpID()
-        );
+                        throw new RuntimeException(
+                                        "Team is required");
+                }
 
+                requestedTeam = requestedTeam.trim();
 
-        user.setName(
-                request.getName()
-        );
+                if ("hiring_manager"
+                                .equalsIgnoreCase(creatorRole)) {
 
+                        if (creator.getTeam() == null ||
+                                        creator.getTeam()
+                                                        .trim()
+                                                        .isEmpty()) {
 
-        user.setDesignation(
-                request.getDesignation()
-        );
+                                throw new RuntimeException(
+                                                "Hiring Manager team is not assigned");
+                        }
 
+                        if (!creator
+                                        .getTeam()
+                                        .equalsIgnoreCase(
+                                                        requestedTeam)) {
 
-        user.setBusiness(
-                request.getBusiness()
-        );
+                                throw new RuntimeException(
+                                                "Hiring Manager can create users only in their own team");
+                        }
+                }
 
+                if ("super_admin"
+                                .equalsIgnoreCase(creatorRole)
+                                &&
+                                !"hiring_manager"
+                                                .equalsIgnoreCase(
+                                                                requestedRole)) {
 
-        user.setDepartment(
-                request.getDepartment()
-        );
+                        throw new RuntimeException(
+                                        "Super Admin can create Hiring Manager only");
+                }
 
+                User user = new User();
 
-        user.setLobDivision(
-                request.getLobDivision()
-        );
+                user.setEmpID(
+                                empID);
 
+                user.setName(
+                                request
+                                                .getName()
+                                                .trim());
 
-        user.setEmail(
-                request.getEmail()
-        );
+                user.setDesignation(
+                                request
+                                                .getDesignation()
+                                                .trim());
 
+                user.setBusiness(
+                                request.getBusiness());
 
-        user.setMobileNo(
-                request.getMobileNo()
-        );
+                user.setDepartment(
+                                request.getDepartment());
 
+                user.setLobDivision(
+                                request.getLobDivision());
 
-        user.setRoleType(
-                request.getRoleType()
-        );
+                user.setSupervisor(
+                                request.getSupervisor());
 
+                user.setEmail(
+                                email);
 
-        if (request.getProfileStatus() != null) {
+                user.setMobileNo(
+                                request.getMobileNo());
 
-            user.setProfileStatus(
-                    request.getProfileStatus()
-            );
+                user.setRoleType(
+                                requestedRole);
+
+                user.setTeam(
+                                requestedTeam);
+
+                user.setColorCode(
+                                request.getColorCode());
+
+                /*
+                 * Default password for every newly created user
+                 *
+                 * Plain password:
+                 * 123456
+                 *
+                 * Database:
+                 * BCrypt encrypted password
+                 */
+                final String DEFAULT_PASSWORD = "123456";
+
+                user.setPassword(
+                                passwordEncoder.encode(
+                                                DEFAULT_PASSWORD));
+
+                user.setProfileStatus(
+                                request.getProfileStatus() != null
+                                                ? request.getProfileStatus()
+                                                : Status.active);
+
+                user.setTeamStatus(
+                                1);
+
+                user.setCreatedBy(
+                                creatorEmpID);
+
+                LocalDateTime now = LocalDateTime.now();
+
+                user.setCreatedAt(
+                                now);
+
+                user.setUpdatedAt(
+                                now);
+
+                User savedUser = userRepository.save(
+                                user);
+
+                return mapToResponse(
+                                savedUser);
         }
 
+        @Override
+        @Transactional(readOnly = true)
+        public List<UserResponse> getAllUsers(
+                        String empID) {
 
-        user.setTeam(
-                teamName
-        );
+                User loggedInUser = userRepository
+                                .findByEmpID(empID)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Logged-in user not found: "
+                                                                + empID));
 
+                String role = loggedInUser.getRoleType();
 
-        user.setColorCode(
-                request.getColorCode() != null
-                        ? request.getColorCode()
-                        : ""
-        );
+                if ("super_admin"
+                                .equalsIgnoreCase(role)) {
 
+                        return userRepository
+                                        .findAll()
+                                        .stream()
+                                        .map(this::mapToResponse)
+                                        .toList();
+                }
 
-        // -----------------------------------------------------
-        // PASSWORD
-        // -----------------------------------------------------
+                String team = loggedInUser.getTeam();
 
-        if (request.getPassword() != null
-                && !request.getPassword().isBlank()) {
+                if (team == null ||
+                                team.trim().isEmpty()) {
 
-            user.setPassword(
-                    passwordEncoder.encode(
-                            request.getPassword()
-                    )
-            );
+                        return List.of();
+                }
+
+                if ("hiring_manager"
+                                .equalsIgnoreCase(role)) {
+
+                        return userRepository
+                                        .findByTeamIgnoreCase(team)
+                                        .stream()
+                                        .filter(user ->
+
+                                        "hiring_manager"
+                                                        .equalsIgnoreCase(
+                                                                        user.getRoleType())
+
+                                                        ||
+
+                                                        "admin"
+                                                                        .equalsIgnoreCase(
+                                                                                        user.getRoleType())
+
+                                                        ||
+
+                                                        "recruiter"
+                                                                        .equalsIgnoreCase(
+                                                                                        user.getRoleType())
+
+                                        )
+                                        .map(this::mapToResponse)
+                                        .toList();
+                }
+
+                if ("admin"
+                                .equalsIgnoreCase(role)) {
+
+                        return userRepository
+                                        .findByTeamIgnoreCase(team)
+                                        .stream()
+                                        .filter(user ->
+
+                                        "admin"
+                                                        .equalsIgnoreCase(
+                                                                        user.getRoleType())
+
+                                                        ||
+
+                                                        "recruiter"
+                                                                        .equalsIgnoreCase(
+                                                                                        user.getRoleType())
+
+                                        )
+                                        .map(this::mapToResponse)
+                                        .toList();
+                }
+
+                if ("recruiter"
+                                .equalsIgnoreCase(role)) {
+
+                        return userRepository
+                                        .findByTeamIgnoreCase(team)
+                                        .stream()
+                                        .filter(user -> "recruiter"
+                                                        .equalsIgnoreCase(
+                                                                        user.getRoleType()))
+                                        .map(this::mapToResponse)
+                                        .toList();
+                }
+
+                return List.of();
         }
 
+        @Override
+        @Transactional(readOnly = true)
+        public UserResponse getUserById(
+                        Long id) {
 
-        user.setUpdatedAt(
-                LocalDateTime.now()
-        );
+                User user = userRepository
+                                .findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: "
+                                                                + id));
 
-
-        User savedUser =
-                userRepository.save(user);
-
-
-        return mapToResponse(
-                savedUser
-        );
-    }
-
-
-    // =========================================================
-    // DELETE USER
-    // =========================================================
-
-    @Override
-    public void deleteUser(
-            Long id) {
-
-
-        User user =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Employee not found: "
-                                                + id
-                                )
-                        );
-
-
-        userRepository.delete(user);
-    }
-
-
-    // =========================================================
-    // VALIDATE ACTIVE TEAM
-    //
-    // Only status = 1 allowed
-    // =========================================================
-
-    private String validateActiveTeam(
-            String teamName) {
-
-
-        if (teamName == null
-                || teamName.isBlank()) {
-
-            throw new RuntimeException(
-                    "Team is required"
-            );
+                return mapToResponse(
+                                user);
         }
 
+        @Override
+        @Transactional(readOnly = true)
+        public UserResponse getUserByEmpID(
+                        String empID) {
 
-        String cleanedTeamName =
-                teamName.trim();
+                User user = userRepository
+                                .findByEmpID(empID)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: "
+                                                                + empID));
 
-
-        Team team =
-                teamRepository
-                        .findByNameIgnoreCase(
-                                cleanedTeamName
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Team not found: "
-                                                + cleanedTeamName
-                                )
-                        );
-
-
-        if (team.getStatus() == null
-                || team.getStatus() != 1) {
-
-            throw new RuntimeException(
-                    "Selected team is inactive: "
-                            + cleanedTeamName
-            );
+                return mapToResponse(
+                                user);
         }
 
+        @Override
+        @Transactional(readOnly = true)
+        public UserResponse getMyDetails(
+                        String empID) {
 
-        return team.getName();
-    }
+                User user = userRepository
+                                .findByEmpID(empID)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: "
+                                                                + empID));
 
+                return mapToResponse(
+                                user);
+        }
 
-    // =========================================================
-    // ROLE HIERARCHY
-    // =========================================================
+        @Override
+        public UserResponse updateUser(
 
-    private void validateRoleHierarchy(
-            String creatorRole,
-            RoleType requestedRole) {
+                        Long id,
 
+                        UpdateUserRequest request,
 
-        if ("super_admin".equals(
-                creatorRole)) {
+                        String updaterEmpID
 
+        ) {
 
-            if (requestedRole !=
-                    RoleType.admin) {
+                User updater = userRepository
+                                .findByEmpID(updaterEmpID)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Updater not found: "
+                                                                + updaterEmpID));
+
+                User user = userRepository
+                                .findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: "
+                                                                + id));
+
+                String updaterRole = updater.getRoleType();
+
+                if ("super_admin"
+                                .equalsIgnoreCase(
+                                                updaterRole)) {
+
+                        updateUserFields(
+                                        user,
+                                        request,
+                                        updaterEmpID);
+
+                        return mapToResponse(
+                                        userRepository.save(user));
+                }
+
+                if (updater.getTeam() == null ||
+                                user.getTeam() == null) {
+
+                        throw new RuntimeException(
+                                        "Team information is missing");
+                }
+
+                if (!updater
+                                .getTeam()
+                                .equalsIgnoreCase(
+                                                user.getTeam())) {
+
+                        throw new RuntimeException(
+                                        "You can update users only from your own team");
+                }
+
+                if ("hiring_manager"
+                                .equalsIgnoreCase(
+                                                updaterRole)) {
+
+                        String targetRole = user.getRoleType();
+
+                        if (!"admin"
+                                        .equalsIgnoreCase(
+                                                        targetRole)
+                                        &&
+                                        !"recruiter"
+                                                        .equalsIgnoreCase(
+                                                                        targetRole)) {
+
+                                throw new RuntimeException(
+                                                "Hiring Manager can update Admin or Recruiter only");
+                        }
+
+                        String newRole = request.getRoleType();
+
+                        if (newRole != null &&
+                                        !"admin"
+                                                        .equalsIgnoreCase(
+                                                                        newRole)
+                                        &&
+                                        !"recruiter"
+                                                        .equalsIgnoreCase(
+                                                                        newRole)) {
+
+                                throw new RuntimeException(
+                                                "Hiring Manager can assign only Admin or Recruiter role");
+                        }
+
+                        request.setTeam(
+                                        updater.getTeam());
+
+                        updateUserFields(
+                                        user,
+                                        request,
+                                        updaterEmpID);
+
+                        return mapToResponse(
+                                        userRepository.save(user));
+                }
+
+                if ("admin"
+                                .equalsIgnoreCase(
+                                                updaterRole)) {
+
+                        String targetRole = user.getRoleType();
+
+                        if (!"admin"
+                                        .equalsIgnoreCase(
+                                                        targetRole)
+                                        &&
+                                        !"recruiter"
+                                                        .equalsIgnoreCase(
+                                                                        targetRole)) {
+
+                                throw new RuntimeException(
+                                                "Admin cannot update this user");
+                        }
+
+                        request.setTeam(
+                                        updater.getTeam());
+
+                        updateUserFields(
+                                        user,
+                                        request,
+                                        updaterEmpID);
+
+                        return mapToResponse(
+                                        userRepository.save(user));
+                }
 
                 throw new RuntimeException(
-                        "Super Admin can create Admin only"
-                );
-            }
-
-
-            return;
+                                "You do not have permission to update users");
         }
 
+        @Override
+        public void deleteUser(
+                        Long id) {
 
-        if ("admin".equals(
-                creatorRole)) {
+                User user = userRepository
+                                .findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: "
+                                                                + id));
 
+                user.setProfileStatus(
+                                Status.inactive);
 
-            if (requestedRole !=
-                    RoleType.delivery_lead) {
+                user.setTeamStatus(
+                                0);
+
+                user.setDeletedAt(
+                                LocalDateTime.now());
+
+                userRepository.save(
+                                user);
+        }
+
+        private void updateUserFields(
+
+                        User user,
+
+                        UpdateUserRequest request,
+
+                        String updatedBy
+
+        ) {
+
+                user.setEmpID(
+                                request
+                                                .getEmpID()
+                                                .trim());
+
+                user.setName(
+                                request
+                                                .getName()
+                                                .trim());
+
+                user.setDesignation(
+                                request
+                                                .getDesignation()
+                                                .trim());
+
+                user.setBusiness(
+                                request.getBusiness());
+
+                user.setDepartment(
+                                request.getDepartment());
+
+                user.setLobDivision(
+                                request.getLobDivision());
+
+                user.setSupervisor(
+                                request.getSupervisor());
+
+                user.setEmail(
+                                request
+                                                .getEmail()
+                                                .trim()
+                                                .toLowerCase());
+
+                user.setMobileNo(
+                                request.getMobileNo());
+
+                if (request.getRoleType() != null &&
+                                !request
+                                                .getRoleType()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        user.setRoleType(
+                                        request
+                                                        .getRoleType()
+                                                        .trim()
+                                                        .toLowerCase());
+                }
+
+                if (request.getTeam() != null &&
+                                !request
+                                                .getTeam()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        user.setTeam(
+                                        request
+                                                        .getTeam()
+                                                        .trim());
+                }
+
+                if (request.getColorCode() != null) {
+
+                        user.setColorCode(
+                                        request.getColorCode());
+                }
+
+                /*
+                 * Update password only when
+                 * password is provided.
+                 */
+                if (request.getPassword() != null &&
+                                !request
+                                                .getPassword()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        user.setPassword(
+                                        passwordEncoder.encode(
+                                                        request
+                                                                        .getPassword()
+                                                                        .trim()));
+                }
+
+                if (request.getProfileStatus() != null) {
+
+                        user.setProfileStatus(
+                                        request.getProfileStatus());
+
+                        if (request.getProfileStatus() == Status.active) {
+
+                                user.setDeletedAt(
+                                                null);
+
+                                user.setTeamStatus(
+                                                1);
+                        }
+
+                        if (request.getProfileStatus() == Status.inactive) {
+
+                                user.setDeletedAt(
+                                                LocalDateTime.now());
+
+                                user.setTeamStatus(
+                                                0);
+                        }
+                }
+
+                user.setUpdatedBy(
+                                updatedBy);
+
+                user.setUpdatedAt(
+                                LocalDateTime.now());
+        }
+
+        private void validateRoleHierarchy(
+
+                        String creatorRole,
+
+                        String requestedRole
+
+        ) {
+
+                if ("super_admin"
+                                .equalsIgnoreCase(
+                                                creatorRole)) {
+
+                        if (!"hiring_manager"
+                                        .equalsIgnoreCase(
+                                                        requestedRole)) {
+
+                                throw new RuntimeException(
+                                                "Super Admin can create Hiring Manager only");
+                        }
+
+                        return;
+                }
+
+                if ("hiring_manager"
+                                .equalsIgnoreCase(
+                                                creatorRole)) {
+
+                        if (!"admin"
+                                        .equalsIgnoreCase(
+                                                        requestedRole)
+                                        &&
+                                        !"recruiter"
+                                                        .equalsIgnoreCase(
+                                                                        requestedRole)) {
+
+                                throw new RuntimeException(
+                                                "Hiring Manager can create Admin or Recruiter only");
+                        }
+
+                        return;
+                }
+
+                if ("admin"
+                                .equalsIgnoreCase(
+                                                creatorRole)) {
+
+                        throw new RuntimeException(
+                                        "Admin is not allowed to create users");
+                }
+
+                if ("recruiter"
+                                .equalsIgnoreCase(
+                                                creatorRole)) {
+
+                        throw new RuntimeException(
+                                        "Recruiter is not allowed to create users");
+                }
 
                 throw new RuntimeException(
-                        "Admin can create Hiring Manager only"
-                );
-            }
-
-
-            return;
+                                "Invalid creator role: "
+                                                + creatorRole);
         }
 
+        private UserResponse mapToResponse(
+                        User user) {
 
-        if ("delivery_lead".equals(
-                creatorRole)) {
+                return new UserResponse(
 
+                                user.getId(),
 
-            if (requestedRole !=
-                    RoleType.recruiter) {
+                                user.getEmpID(),
 
-                throw new RuntimeException(
-                        "Hiring Manager can create Recruiter only"
-                );
-            }
+                                user.getName(),
 
+                                user.getDesignation(),
 
-            return;
+                                user.getBusiness(),
+
+                                user.getDepartment(),
+
+                                user.getLobDivision(),
+
+                                user.getSupervisor(),
+
+                                user.getEmail(),
+
+                                user.getMobileNo(),
+
+                                user.getRoleType(),
+
+                                user.getProfileStatus(),
+
+                                user.getTeam(),
+
+                                user.getTeamStatus(),
+
+                                user.getColorCode());
         }
-
-
-        if ("recruiter".equals(
-                creatorRole)) {
-
-
-            throw new RuntimeException(
-                    "Recruiter is not allowed to create users"
-            );
-        }
-
-
-        throw new RuntimeException(
-                "Invalid creator role: "
-                        + creatorRole
-        );
-    }
-
-
-   private UserResponse mapToResponse(
-        User user) {
-
-    Integer teamStatus = 0;
-
-
-    
-
-    if (user.getTeam() != null
-            && !user.getTeam().isBlank()) {
-
-        teamStatus =
-                teamRepository
-                        .findByNameIgnoreCase(
-                                user.getTeam().trim()
-                        )
-                        .map(Team::getStatus)
-                        .orElse(0);
-    }
-
-
-
-    return new UserResponse(
-
-            user.getId(),
-
-            user.getEmpID(),
-
-            user.getName(),
-
-            user.getDesignation(),
-
-            user.getBusiness(),
-
-            user.getDepartment(),
-
-            user.getLobDivision(),
-
-            user.getSupervisor(),
-
-            user.getEmail(),
-
-            user.getMobileNo(),
-
-            user.getRoleType(),
-
-            user.getProfileStatus(),
-
-            user.getTeam(),
-
-            teamStatus,
-
-            user.getColorCode()
-    );
 }
-
-        }

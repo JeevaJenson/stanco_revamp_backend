@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.stereotype.Component;
@@ -37,7 +36,6 @@ public class JwtAuthenticationFilter
             FilterChain filterChain)
             throws ServletException, IOException {
 
-
         String authHeader =
                 request.getHeader("Authorization");
 
@@ -60,43 +58,60 @@ public class JwtAuthenticationFilter
 
         try {
 
+            if (!jwtService.isTokenValid(token)) {
 
-            if (jwtService.isTokenValid(token)) {
+                SecurityContextHolder
+                        .clearContext();
 
+                filterChain.doFilter(
+                        request,
+                        response
+                );
 
-                String empID =
-                        jwtService.extractEmpID(token);
-
-
-        
-                UserDetails userDetails =
-                        customUserDetailsService
-                                .loadUserByUsername(
-                                        empID
-                                );
-
-
-
-
-                if (userDetails.isEnabled()) {
-
-
-                    UsernamePasswordAuthenticationToken
-                            authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(
-                                    authentication
-                            );
-                }
+                return;
             }
+
+
+            String empID =
+                    jwtService.extractEmpID(token);
+
+
+            UserDetails userDetails =
+                    customUserDetailsService
+                            .loadUserByUsername(
+                                    empID
+                            );
+
+
+            if (!userDetails.isEnabled()) {
+
+                SecurityContextHolder
+                        .clearContext();
+
+                filterChain.doFilter(
+                        request,
+                        response
+                );
+
+                return;
+            }
+
+
+            UsernamePasswordAuthenticationToken
+                    authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+
+
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(
+                            authentication
+                    );
+
 
         } catch (Exception e) {
 

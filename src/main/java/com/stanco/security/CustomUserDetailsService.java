@@ -28,7 +28,6 @@ public class CustomUserDetailsService
             String empID)
             throws UsernameNotFoundException {
 
-
         User user =
                 userRepository
                         .findByEmpID(empID)
@@ -43,6 +42,25 @@ public class CustomUserDetailsService
         boolean enabled =
                 user.getProfileStatus()
                         == Status.active;
+
+
+        String role =
+                user.getRoleType();
+
+
+        if (role == null ||
+                role.trim().isEmpty()) {
+
+            throw new UsernameNotFoundException(
+                    "Role not assigned for user: "
+                            + empID
+            );
+        }
+
+
+        role =
+                role.trim()
+                        .toLowerCase();
 
 
         return new org.springframework.security
@@ -60,8 +78,7 @@ public class CustomUserDetailsService
 
                 List.of(
                         new SimpleGrantedAuthority(
-                                "ROLE_"
-                                        + user.getRoleType()
+                                "ROLE_" + role
                         )
                 )
         );
