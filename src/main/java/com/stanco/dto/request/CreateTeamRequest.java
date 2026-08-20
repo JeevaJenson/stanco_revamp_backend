@@ -7,12 +7,8 @@ import lombok.Data;
 @Data
 public class CreateTeamRequest {
 
-    @NotBlank(
-            message = "Team name is required"
-    )
+    @NotBlank(message = "Team name is required")
     private String name;
 
-
-   
     private Integer status;
 }

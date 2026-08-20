@@ -8,41 +8,23 @@ import java.util.List;
 
 public interface TeamService {
 
+        TeamResponse createTeam(
+                        CreateTeamRequest request,
+                        String creatorEmpID);
 
-    
+        List<TeamResponse> getAllTeams();
 
-    TeamResponse createTeam(
-            CreateTeamRequest request,
-            String creatorEmpID
-    );
+        List<TeamResponse> getActiveTeams();
 
+        TeamResponse getTeamById(
+                        Long id);
 
-    
-    List<TeamResponse> getAllTeams();
+        TeamResponse updateTeam(
+                        Long id,
+                        UpdateTeamRequest request,
+                        String updaterEmpID);
 
-
-
-    List<TeamResponse> getActiveTeams();
-
-
-   
-
-    TeamResponse getTeamById(
-            Long id
-    );
-
-
-   
-    TeamResponse updateTeam(
-            Long id,
-            UpdateTeamRequest request,
-            String updaterEmpID
-    );
-
-
-    
-
-    void deleteTeam(
-            Long id
-    );
+        void deleteTeam(
+                        Long id,
+                        String deletedBy);
 }

@@ -13,18 +13,17 @@ public class TeamResponse {
 
     private String name;
 
-   
     private Integer status;
 
-   
     private LocalDateTime createdAt;
 
-   
     private LocalDateTime updatedAt;
 
-   
     private String createdBy;
 
-    
     private String updatedBy;
+
+    private LocalDateTime deletedAt;
+
+    private String deletedBy;
 }

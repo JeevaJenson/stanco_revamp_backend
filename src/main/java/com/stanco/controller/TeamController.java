@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.core.Authentication;
@@ -19,136 +18,88 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/teams")
 @RequiredArgsConstructor
 public class TeamController {
 
+        private final TeamService teamService;
 
-    private final TeamService teamService;
+        @PostMapping
+        public ResponseEntity<TeamResponse> createTeam(
 
+                        @Valid @RequestBody CreateTeamRequest request,
 
-    @PostMapping
-    public ResponseEntity<TeamResponse>
-    createTeam(
+                        Authentication authentication
 
-            @Valid
-            @RequestBody
-            CreateTeamRequest request,
+        ) {
 
-            Authentication authentication
-    ) {
+                String creatorEmpID = authentication.getName();
 
+                return ResponseEntity.ok(
+                                teamService.createTeam(
+                                                request,
+                                                creatorEmpID));
+        }
 
-        String creatorEmpID =
-                authentication.getName();
+        @GetMapping
+        public ResponseEntity<List<TeamResponse>> getAllTeams() {
 
+                return ResponseEntity.ok(
+                                teamService.getAllTeams());
+        }
 
-        TeamResponse response =
-                teamService.createTeam(
-                        request,
-                        creatorEmpID
-                );
+        @GetMapping("/active")
+        public ResponseEntity<List<TeamResponse>> getActiveTeams() {
 
+                return ResponseEntity.ok(
+                                teamService.getActiveTeams());
+        }
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<TeamResponse> getTeamById(
+                        @PathVariable Long id) {
 
+                return ResponseEntity.ok(
+                                teamService.getTeamById(id));
+        }
 
-    
+        @PutMapping("/{id}")
+        public ResponseEntity<TeamResponse> updateTeam(
 
-    @GetMapping
-    public ResponseEntity<List<TeamResponse>>
-    getAllTeams() {
+                        @PathVariable Long id,
 
+                        @Valid @RequestBody UpdateTeamRequest request,
 
-        return ResponseEntity.ok(
-                teamService.getAllTeams()
-        );
-    }
+                        Authentication authentication
 
+        ) {
 
-    
+                String updaterEmpID = authentication.getName();
 
-    @GetMapping("/active")
-    public ResponseEntity<List<TeamResponse>>
-    getActiveTeams() {
+                return ResponseEntity.ok(
+                                teamService.updateTeam(
+                                                id,
+                                                request,
+                                                updaterEmpID));
+        }
 
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteTeam(
 
-        return ResponseEntity.ok(
-                teamService.getActiveTeams()
-        );
-    }
+                        @PathVariable Long id,
 
+                        Authentication authentication
 
-    
+        ) {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TeamResponse>
-    getTeamById(
-            @PathVariable Long id
-    ) {
+                String deletedBy = authentication.getName();
 
+                teamService.deleteTeam(
+                                id,
+                                deletedBy);
 
-        return ResponseEntity.ok(
-                teamService.getTeamById(
-                        id
-                )
-        );
-    }
-
-
-   
-
-    @PutMapping("/{id}")
-    public ResponseEntity<TeamResponse>
-    updateTeam(
-
-            @PathVariable Long id,
-
-            @Valid
-            @RequestBody
-            UpdateTeamRequest request,
-
-            Authentication authentication
-    ) {
-
-
-        String updaterEmpID =
-                authentication.getName();
-
-
-        TeamResponse response =
-                teamService.updateTeam(
-                        id,
-                        request,
-                        updaterEmpID
-                );
-
-
-        return ResponseEntity.ok(
-                response
-        );
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void>
-    deleteTeam(
-            @PathVariable Long id
-    ) {
-
-
-        teamService.deleteTeam(
-                id
-        );
-
-
-        return ResponseEntity
-                .noContent()
-                .build();
-    }
+                return ResponseEntity.noContent()
+                                .build();
+        }
 }

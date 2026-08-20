@@ -8,23 +8,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TeamRepository
-        extends JpaRepository<Team, Long> {
+                extends JpaRepository<Team, Long> {
 
+        Optional<Team> findByNameIgnoreCase(
+                        String name);
 
-    Optional<Team> findByNameIgnoreCase(
-            String name
-    );
+        List<Team> findByStatus(
+                        Integer status);
 
+        boolean existsByNameIgnoreCase(
+                        String name);
 
-    List<Team> findByStatus(
-            Integer status
-    );
-
-
-    boolean existsByNameIgnoreCase(
-            String name
-    );
-
-
-    List<Team> findAllByOrderByNameAsc();
+        List<Team> findAllByOrderByNameAsc();
 }

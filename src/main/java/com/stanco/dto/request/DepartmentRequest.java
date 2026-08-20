@@ -3,7 +3,6 @@ package com.stanco.dto.request;
 import com.stanco.enums.Status;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 
@@ -18,6 +17,5 @@ public class DepartmentRequest {
 
     private Status status;
 
-    @NotNull(message = "Vertical is required")
     private Long verticalId;
 }

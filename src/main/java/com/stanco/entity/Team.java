@@ -28,9 +28,6 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-    
-
     @Column(
             name = "name",
             nullable = false,
@@ -39,17 +36,12 @@ public class Team {
     )
     private String name;
 
-
-   
     @Column(
             name = "status",
             nullable = false,
             columnDefinition = "TINYINT"
     )
     private Integer status = 1;
-
-
-   
 
     @Column(
             name = "created_at",
@@ -58,16 +50,11 @@ public class Team {
     )
     private LocalDateTime createdAt;
 
-
-    
-
     @Column(
             name = "updated_at",
             nullable = false
     )
     private LocalDateTime updatedAt;
-
-
 
     @Column(
             name = "created_by",
@@ -77,8 +64,6 @@ public class Team {
     )
     private String createdBy;
 
-
-
     @Column(
             name = "updated_by",
             nullable = false,
@@ -86,26 +71,38 @@ public class Team {
     )
     private String updatedBy;
 
+    @Column(
+            name = "deleted_at"
+    )
+    private LocalDateTime deletedAt;
 
+    @Column(
+            name = "deleted_by",
+            length = 100
+    )
+    private String deletedBy;
 
     @PrePersist
     protected void onCreate() {
 
-        LocalDateTime now =
-                LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
         createdAt = now;
-
         updatedAt = now;
+
+        if (status == null) {
+            status = 1;
+        }
+
+        if (status == 1) {
+            deletedAt = null;
+            deletedBy = null;
+        }
     }
-
-
-    
 
     @PreUpdate
     protected void onUpdate() {
 
-        updatedAt =
-                LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }
