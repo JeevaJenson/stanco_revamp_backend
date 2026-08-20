@@ -9,7 +9,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tbl_rfh")
+@Table(
+        name = "tbl_rfh",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_rfh_ticket_number",
+                        columnNames = "ticket_number"
+                )
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,7 +63,10 @@ public class Rfh {
     @Column(name = "approval_hire")
     private String approvalHire;
 
-    @Column(name = "ticket_number")
+    @Column(
+            name = "ticket_number",
+            unique = true
+    )
     private String ticketNumber;
 
     @Column(name = "position_title")
@@ -64,7 +75,10 @@ public class Rfh {
     @Column(name = "location")
     private String location;
 
-    @Column(name = "location_preferred", columnDefinition = "TEXT")
+    @Column(
+            name = "location_preferred",
+            columnDefinition = "TEXT"
+    )
     private String locationPreferred;
 
     @Column(name = "business")
@@ -82,16 +96,25 @@ public class Rfh {
     @Column(name = "no_of_positions")
     private String noOfPositions;
 
-    @Column(name = "jd_roles", columnDefinition = "TEXT")
+    @Column(
+            name = "jd_roles",
+            columnDefinition = "TEXT"
+    )
     private String jdRoles;
 
     @Column(name = "qualification")
     private String qualification;
 
-    @Column(name = "essential_skill", columnDefinition = "TEXT")
+    @Column(
+            name = "essential_skill",
+            columnDefinition = "TEXT"
+    )
     private String essentialSkill;
 
-    @Column(name = "good_skill", columnDefinition = "TEXT")
+    @Column(
+            name = "good_skill",
+            columnDefinition = "TEXT"
+    )
     private String goodSkill;
 
     @Column(name = "experience")
@@ -103,25 +126,41 @@ public class Rfh {
     @Column(name = "salary_range_annual")
     private String salaryRangeAnnual;
 
-    @Column(name = "any_specific", columnDefinition = "TEXT")
+    @Column(
+            name = "any_specific",
+            columnDefinition = "TEXT"
+    )
     private String anySpecific;
 
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @Column(name = "delete_status", nullable = false)
+    @Column(
+            name = "delete_status",
+            nullable = false
+    )
     private Integer deleteStatus;
 
-    @Column(name = "delete_remark", nullable = false, columnDefinition = "TEXT")
+    @Column(
+            name = "delete_remark",
+            nullable = false,
+            columnDefinition = "TEXT"
+    )
     private String deleteRemark;
 
-    @Column(name = "approval_hire_path", nullable = false)
+    @Column(
+            name = "approval_hire_path",
+            nullable = false
+    )
     private Integer approvalHirePath;
 
     @Column(name = "request_date")
     private String requestDate;
 
-    @Column(name = "request_by", nullable = false)
+    @Column(
+            name = "request_by",
+            nullable = false
+    )
     private String requestBy;
 
     @Column(name = "approve_date")
@@ -163,6 +202,9 @@ public class Rfh {
     @Column(name = "reporter_id")
     private String reporterId;
 
-    @Column(name = "client_name", nullable = false)
+    @Column(
+            name = "client_name",
+            nullable = false
+    )
     private String clientName;
 }

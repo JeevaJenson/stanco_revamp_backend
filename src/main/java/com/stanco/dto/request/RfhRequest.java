@@ -33,8 +33,6 @@ public class RfhRequest {
 
     private String approvalHire;
 
-    private String ticketNumber;
-
     private String positionTitle;
 
     private String location;

@@ -2,7 +2,6 @@ package com.stanco.controller;
 
 import com.stanco.dto.request.RfhRequest;
 import com.stanco.dto.response.RfhResponse;
-
 import com.stanco.service.RfhService;
 
 import jakarta.validation.Valid;
@@ -10,9 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,113 +19,81 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RfhController {
 
-    private final RfhService service;
+        private final RfhService service;
 
+        @PostMapping
+        public ResponseEntity<RfhResponse> create(
 
-    @PostMapping
-    public ResponseEntity<RfhResponse> create(
+                        @Valid @RequestBody RfhRequest request,
 
-            @Valid
-            @RequestBody
-            RfhRequest request,
+                        Authentication authentication) {
 
-            Authentication authentication) {
+                String empID = authentication.getName();
 
-        String empID =
-                authentication.getName();
+                return ResponseEntity.ok(
+                                service.create(
+                                                request,
+                                                empID));
+        }
 
-        return ResponseEntity.ok(
-                service.create(
-                        request,
-                        empID
-                )
-        );
-    }
+        @GetMapping
+        public ResponseEntity<List<RfhResponse>> getAll() {
 
+                return ResponseEntity.ok(
+                                service.getAll());
+        }
 
-    @GetMapping
-    public ResponseEntity<List<RfhResponse>>
-    getAll() {
+        @GetMapping("/{id}")
+        public ResponseEntity<RfhResponse> getById(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                service.getAll()
-        );
-    }
+                return ResponseEntity.ok(
+                                service.getById(id));
+        }
 
+        @GetMapping("/res/{resId}")
+        public ResponseEntity<RfhResponse> getByResId(
+                        @PathVariable String resId) {
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RfhResponse>
-    getById(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                service.getByResId(resId));
+        }
 
-        return ResponseEntity.ok(
-                service.getById(id)
-        );
-    }
+        @GetMapping("/my")
+        public ResponseEntity<List<RfhResponse>> getMyRfh(
+                        Authentication authentication) {
 
+                String empID = authentication.getName();
 
-    @GetMapping("/res/{resId}")
-    public ResponseEntity<RfhResponse>
-    getByResId(
-            @PathVariable String resId) {
+                return ResponseEntity.ok(
+                                service.getMyRfh(empID));
+        }
 
-        return ResponseEntity.ok(
-                service.getByResId(resId)
-        );
-    }
+        @PutMapping("/{id}")
+        public ResponseEntity<RfhResponse> update(
 
+                        @PathVariable Long id,
 
-    @GetMapping("/my")
-    public ResponseEntity<List<RfhResponse>>
-    getMyRfh(
-            Authentication authentication) {
+                        @Valid @RequestBody RfhRequest request) {
 
-        String empID =
-                authentication.getName();
+                return ResponseEntity.ok(
+                                service.update(
+                                                id,
+                                                request));
+        }
 
-        return ResponseEntity.ok(
-                service.getMyRfh(empID)
-        );
-    }
+        @DeleteMapping("/{id}")
+        public ResponseEntity<String> delete(
 
+                        @PathVariable Long id,
 
-    @PutMapping("/{id}")
-    public ResponseEntity<RfhResponse>
-    update(
+                        @RequestParam(required = false) String remark) {
 
-            @PathVariable Long id,
+                service.delete(
+                                id,
+                                remark);
 
-            @Valid
-            @RequestBody
-            RfhRequest request) {
-
-        return ResponseEntity.ok(
-                service.update(
-                        id,
-                        request
-                )
-        );
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String>
-    delete(
-
-            @PathVariable Long id,
-
-            @RequestParam(
-                    required = false
-            )
-            String remark) {
-
-        service.delete(
-                id,
-                remark
-        );
-
-        return ResponseEntity.ok(
-                "RFH deleted successfully"
-        );
-    }
+                return ResponseEntity.ok(
+                                "RFH deleted successfully");
+        }
 }

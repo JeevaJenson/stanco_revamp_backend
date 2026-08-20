@@ -2,612 +2,530 @@ package com.stanco.serviceimpl;
 
 import com.stanco.dto.request.RfhRequest;
 import com.stanco.dto.response.RfhResponse;
-
 import com.stanco.entity.Rfh;
-
 import com.stanco.repository.RfhRepository;
-
 import com.stanco.service.RfhService;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RfhServiceImpl
-        implements RfhService {
+                implements RfhService {
 
-    private final RfhRepository repository;
+        private final RfhRepository repository;
 
+        @Override
+        public RfhResponse create(
+                        RfhRequest request,
+                        String requestBy) {
 
-    @Override
-    public RfhResponse create(
-            RfhRequest request,
-            String requestBy) {
+                if (request.getResId() != null
+                                && !request.getResId().trim().isEmpty()
+                                && repository.existsByResId(
+                                                request.getResId())) {
 
+                        throw new RuntimeException(
+                                        "RES ID already exists");
+                }
 
-        if (request.getResId() != null &&
-                repository.existsByResId(
-                        request.getResId())) {
+                Rfh rfh = new Rfh();
 
-            throw new RuntimeException(
-                    "RES ID already exists"
-            );
+                rfh.setResId(
+                                request.getResId());
+
+                rfh.setRollsOption(
+                                request.getRollsOption());
+
+                rfh.setName(
+                                request.getName());
+
+                rfh.setMobile(
+                                request.getMobile());
+
+                rfh.setEmail(
+                                request.getEmail());
+
+                rfh.setPositionReports(
+                                request.getPositionReports());
+
+                rfh.setReportEmail(
+                                request.getReportEmail());
+
+                rfh.setCostCenter(
+                                request.getCostCenter());
+
+                rfh.setApprovedBy(
+                                request.getApprovedBy());
+
+                rfh.setRequestType(
+                                request.getRequestType());
+
+                rfh.setReplacementOf(
+                                request.getReplacementOf());
+
+                rfh.setApprovalHire(
+                                request.getApprovalHire());
+
+                rfh.setPositionTitle(
+                                request.getPositionTitle());
+
+                rfh.setLocation(
+                                request.getLocation());
+
+                rfh.setLocationPreferred(
+                                request.getLocationPreferred());
+
+                rfh.setBusiness(
+                                request.getBusiness());
+
+                rfh.setBand(
+                                request.getBand());
+
+                rfh.setDivision(
+                                request.getDivision());
+
+                rfh.setFunction(
+                                request.getFunction());
+
+                rfh.setNoOfPositions(
+                                request.getNoOfPositions());
+
+                rfh.setJdRoles(
+                                request.getJdRoles());
+
+                rfh.setQualification(
+                                request.getQualification());
+
+                rfh.setEssentialSkill(
+                                request.getEssentialSkill());
+
+                rfh.setGoodSkill(
+                                request.getGoodSkill());
+
+                rfh.setExperience(
+                                request.getExperience());
+
+                rfh.setSalaryRange(
+                                request.getSalaryRange());
+
+                rfh.setSalaryRangeAnnual(
+                                request.getSalaryRangeAnnual());
+
+                rfh.setAnySpecific(
+                                request.getAnySpecific());
+
+                rfh.setCreatedDate(
+                                LocalDateTime.now());
+
+                rfh.setDeleteStatus(0);
+
+                rfh.setDeleteRemark(
+                                request.getDeleteRemark() != null
+                                                ? request.getDeleteRemark()
+                                                : "");
+
+                rfh.setApprovalHirePath(
+                                request.getApprovalHirePath() != null
+                                                ? request.getApprovalHirePath()
+                                                : 0);
+
+                rfh.setRequestDate(
+                                request.getRequestDate());
+
+                rfh.setRequestBy(
+                                requestBy);
+
+                rfh.setApproveDate(
+                                request.getApproveDate());
+
+                rfh.setDepartment(
+                                request.getDepartment());
+
+                rfh.setDesignation(
+                                request.getDesignation());
+
+                rfh.setVertical(
+                                request.getVertical());
+
+                rfh.setTenDoj(
+                                request.getTenDoj());
+
+                rfh.setEmpCategory(
+                                request.getEmpCategory());
+
+                rfh.setType(
+                                request.getType());
+
+                rfh.setAttendanceFormat(
+                                request.getAttendanceFormat());
+
+                rfh.setWeekOff(
+                                request.getWeekOff());
+
+                rfh.setCkSupervisior(
+                                request.getCkSupervisior());
+
+                rfh.setCkMail(
+                                request.getCkMail());
+
+                rfh.setApproverId(
+                                request.getApproverId());
+
+                rfh.setReporterId(
+                                request.getReporterId());
+
+                rfh.setClientName(
+                                request.getClientName());
+
+                Rfh saved = repository.save(rfh);
+
+                String ticketNumber = String.format(
+                                "RFH-%06d",
+                                saved.getId());
+
+                saved.setTicketNumber(
+                                ticketNumber);
+
+                saved = repository.save(saved);
+
+                return mapToResponse(saved);
         }
 
+        @Override
+        public List<RfhResponse> getAll() {
 
-        Rfh rfh = new Rfh();
+                return repository
+                                .findByDeleteStatus(0)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
+        @Override
+        public RfhResponse getById(
+                        Long id) {
 
-        rfh.setResId(
-                request.getResId()
-        );
+                Rfh rfh = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "RFH not found: "
+                                                                + id));
 
-        rfh.setRollsOption(
-                request.getRollsOption()
-        );
+                return mapToResponse(rfh);
+        }
 
-        rfh.setName(
-                request.getName()
-        );
+        @Override
+        public RfhResponse getByResId(
+                        String resId) {
 
-        rfh.setMobile(
-                request.getMobile()
-        );
+                Rfh rfh = repository.findByResId(resId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "RFH not found: "
+                                                                + resId));
 
-        rfh.setEmail(
-                request.getEmail()
-        );
+                return mapToResponse(rfh);
+        }
 
-        rfh.setPositionReports(
-                request.getPositionReports()
-        );
+        @Override
+        public List<RfhResponse> getMyRfh(
+                        String requestBy) {
 
-        rfh.setReportEmail(
-                request.getReportEmail()
-        );
+                return repository
+                                .findByRequestBy(requestBy)
+                                .stream()
+                                .filter(rfh -> rfh.getDeleteStatus() == 0)
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        rfh.setCostCenter(
-                request.getCostCenter()
-        );
+        @Override
+        public RfhResponse update(
+                        Long id,
+                        RfhRequest request) {
 
-        rfh.setApprovedBy(
-                request.getApprovedBy()
-        );
+                Rfh rfh = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "RFH not found: "
+                                                                + id));
 
-        rfh.setRequestType(
-                request.getRequestType()
-        );
+                rfh.setResId(
+                                request.getResId());
 
-        rfh.setReplacementOf(
-                request.getReplacementOf()
-        );
+                rfh.setRollsOption(
+                                request.getRollsOption());
 
-        rfh.setApprovalHire(
-                request.getApprovalHire()
-        );
+                rfh.setName(
+                                request.getName());
 
-        rfh.setTicketNumber(
-                request.getTicketNumber()
-        );
+                rfh.setMobile(
+                                request.getMobile());
 
-        rfh.setPositionTitle(
-                request.getPositionTitle()
-        );
+                rfh.setEmail(
+                                request.getEmail());
 
-        rfh.setLocation(
-                request.getLocation()
-        );
+                rfh.setPositionReports(
+                                request.getPositionReports());
 
-        rfh.setLocationPreferred(
-                request.getLocationPreferred()
-        );
+                rfh.setReportEmail(
+                                request.getReportEmail());
 
-        rfh.setBusiness(
-                request.getBusiness()
-        );
+                rfh.setCostCenter(
+                                request.getCostCenter());
 
-        rfh.setBand(
-                request.getBand()
-        );
+                rfh.setApprovedBy(
+                                request.getApprovedBy());
 
-        rfh.setDivision(
-                request.getDivision()
-        );
+                rfh.setRequestType(
+                                request.getRequestType());
 
-        rfh.setFunction(
-                request.getFunction()
-        );
+                rfh.setReplacementOf(
+                                request.getReplacementOf());
 
-        rfh.setNoOfPositions(
-                request.getNoOfPositions()
-        );
+                rfh.setApprovalHire(
+                                request.getApprovalHire());
 
-        rfh.setJdRoles(
-                request.getJdRoles()
-        );
+                // -----------------------------------------------------
+                // IMPORTANT:
+                // NEVER CHANGE EXISTING RFH NUMBER DURING UPDATE
+                // -----------------------------------------------------
+                // rfh.setTicketNumber(...) is intentionally NOT used.
 
-        rfh.setQualification(
-                request.getQualification()
-        );
+                rfh.setPositionTitle(
+                                request.getPositionTitle());
 
-        rfh.setEssentialSkill(
-                request.getEssentialSkill()
-        );
+                rfh.setLocation(
+                                request.getLocation());
 
-        rfh.setGoodSkill(
-                request.getGoodSkill()
-        );
+                rfh.setLocationPreferred(
+                                request.getLocationPreferred());
 
-        rfh.setExperience(
-                request.getExperience()
-        );
+                rfh.setBusiness(
+                                request.getBusiness());
 
-        rfh.setSalaryRange(
-                request.getSalaryRange()
-        );
+                rfh.setBand(
+                                request.getBand());
 
-        rfh.setSalaryRangeAnnual(
-                request.getSalaryRangeAnnual()
-        );
+                rfh.setDivision(
+                                request.getDivision());
 
-        rfh.setAnySpecific(
-                request.getAnySpecific()
-        );
+                rfh.setFunction(
+                                request.getFunction());
 
+                rfh.setNoOfPositions(
+                                request.getNoOfPositions());
 
-        rfh.setCreatedDate(
-                LocalDateTime.now()
-        );
+                rfh.setJdRoles(
+                                request.getJdRoles());
 
+                rfh.setQualification(
+                                request.getQualification());
 
-        rfh.setDeleteStatus(0);
+                rfh.setEssentialSkill(
+                                request.getEssentialSkill());
 
+                rfh.setGoodSkill(
+                                request.getGoodSkill());
 
-        rfh.setDeleteRemark(
-                request.getDeleteRemark() != null
-                        ? request.getDeleteRemark()
-                        : ""
-        );
+                rfh.setExperience(
+                                request.getExperience());
 
+                rfh.setSalaryRange(
+                                request.getSalaryRange());
 
-        rfh.setApprovalHirePath(
-                request.getApprovalHirePath() != null
-                        ? request.getApprovalHirePath()
-                        : 0
-        );
+                rfh.setSalaryRangeAnnual(
+                                request.getSalaryRangeAnnual());
 
+                rfh.setAnySpecific(
+                                request.getAnySpecific());
 
-        rfh.setRequestDate(
-                request.getRequestDate()
-        );
+                rfh.setDeleteRemark(
+                                request.getDeleteRemark());
 
+                rfh.setApprovalHirePath(
+                                request.getApprovalHirePath() != null
+                                                ? request.getApprovalHirePath()
+                                                : 0);
 
-        rfh.setRequestBy(
-                requestBy
-        );
+                rfh.setRequestDate(
+                                request.getRequestDate());
 
+                rfh.setApproveDate(
+                                request.getApproveDate());
 
-        rfh.setApproveDate(
-                request.getApproveDate()
-        );
+                rfh.setDepartment(
+                                request.getDepartment());
 
-        rfh.setDepartment(
-                request.getDepartment()
-        );
+                rfh.setDesignation(
+                                request.getDesignation());
 
-        rfh.setDesignation(
-                request.getDesignation()
-        );
+                rfh.setVertical(
+                                request.getVertical());
 
-        rfh.setVertical(
-                request.getVertical()
-        );
+                rfh.setTenDoj(
+                                request.getTenDoj());
 
-        rfh.setTenDoj(
-                request.getTenDoj()
-        );
+                rfh.setEmpCategory(
+                                request.getEmpCategory());
 
-        rfh.setEmpCategory(
-                request.getEmpCategory()
-        );
+                rfh.setType(
+                                request.getType());
 
-        rfh.setType(
-                request.getType()
-        );
+                rfh.setAttendanceFormat(
+                                request.getAttendanceFormat());
 
-        rfh.setAttendanceFormat(
-                request.getAttendanceFormat()
-        );
+                rfh.setWeekOff(
+                                request.getWeekOff());
 
-        rfh.setWeekOff(
-                request.getWeekOff()
-        );
+                rfh.setCkSupervisior(
+                                request.getCkSupervisior());
 
-        rfh.setCkSupervisior(
-                request.getCkSupervisior()
-        );
+                rfh.setCkMail(
+                                request.getCkMail());
 
-        rfh.setCkMail(
-                request.getCkMail()
-        );
+                rfh.setApproverId(
+                                request.getApproverId());
 
-        rfh.setApproverId(
-                request.getApproverId()
-        );
+                rfh.setReporterId(
+                                request.getReporterId());
 
-        rfh.setReporterId(
-                request.getReporterId()
-        );
+                rfh.setClientName(
+                                request.getClientName());
 
-        rfh.setClientName(
-                request.getClientName()
-        );
+                Rfh updated = repository.save(rfh);
 
+                return mapToResponse(updated);
+        }
 
-        Rfh saved =
+        @Override
+        public void delete(
+                        Long id,
+                        String remark) {
+
+                Rfh rfh = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "RFH not found: "
+                                                                + id));
+
+                rfh.setDeleteStatus(1);
+
+                rfh.setDeleteRemark(
+                                remark != null
+                                                ? remark
+                                                : "Deleted");
+
                 repository.save(rfh);
+        }
 
+        private RfhResponse mapToResponse(
+                        Rfh rfh) {
 
-        return mapToResponse(saved);
-    }
+                return new RfhResponse(
 
+                                rfh.getId(),
 
-    @Override
-    public List<RfhResponse> getAll() {
+                                rfh.getResId(),
 
-        return repository
-                .findByDeleteStatus(0)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                                rfh.getRollsOption(),
 
+                                rfh.getName(),
 
-    @Override
-    public RfhResponse getById(
-            Long id) {
+                                rfh.getMobile(),
 
-        Rfh rfh =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "RFH not found: "
-                                                + id
-                                )
-                        );
+                                rfh.getEmail(),
 
-        return mapToResponse(rfh);
-    }
+                                rfh.getPositionReports(),
 
+                                rfh.getReportEmail(),
 
-    @Override
-    public RfhResponse getByResId(
-            String resId) {
+                                rfh.getCostCenter(),
 
-        Rfh rfh =
-                repository.findByResId(resId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "RFH not found: "
-                                                + resId
-                                )
-                        );
+                                rfh.getApprovedBy(),
 
-        return mapToResponse(rfh);
-    }
+                                rfh.getRequestType(),
 
+                                rfh.getReplacementOf(),
 
-    @Override
-    public List<RfhResponse> getMyRfh(
-            String requestBy) {
+                                rfh.getApprovalHire(),
 
-        return repository
-                .findByRequestBy(requestBy)
-                .stream()
-                .filter(rfh ->
-                        rfh.getDeleteStatus() == 0
-                )
-                .map(this::mapToResponse)
-                .toList();
-    }
+                                rfh.getTicketNumber(),
 
+                                rfh.getPositionTitle(),
 
-    @Override
-    public RfhResponse update(
-            Long id,
-            RfhRequest request) {
+                                rfh.getLocation(),
 
-        Rfh rfh =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "RFH not found: "
-                                                + id
-                                )
-                        );
+                                rfh.getLocationPreferred(),
 
+                                rfh.getBusiness(),
 
-        rfh.setResId(
-                request.getResId()
-        );
+                                rfh.getBand(),
 
-        rfh.setRollsOption(
-                request.getRollsOption()
-        );
+                                rfh.getDivision(),
 
-        rfh.setName(
-                request.getName()
-        );
+                                rfh.getFunction(),
 
-        rfh.setMobile(
-                request.getMobile()
-        );
+                                rfh.getNoOfPositions(),
 
-        rfh.setEmail(
-                request.getEmail()
-        );
+                                rfh.getJdRoles(),
 
-        rfh.setPositionReports(
-                request.getPositionReports()
-        );
+                                rfh.getQualification(),
 
-        rfh.setReportEmail(
-                request.getReportEmail()
-        );
+                                rfh.getEssentialSkill(),
 
-        rfh.setCostCenter(
-                request.getCostCenter()
-        );
+                                rfh.getGoodSkill(),
 
-        rfh.setApprovedBy(
-                request.getApprovedBy()
-        );
+                                rfh.getExperience(),
 
-        rfh.setRequestType(
-                request.getRequestType()
-        );
+                                rfh.getSalaryRange(),
 
-        rfh.setReplacementOf(
-                request.getReplacementOf()
-        );
+                                rfh.getSalaryRangeAnnual(),
 
-        rfh.setApprovalHire(
-                request.getApprovalHire()
-        );
+                                rfh.getAnySpecific(),
 
-        rfh.setTicketNumber(
-                request.getTicketNumber()
-        );
+                                rfh.getCreatedDate(),
 
-        rfh.setPositionTitle(
-                request.getPositionTitle()
-        );
+                                rfh.getDeleteStatus(),
 
-        rfh.setLocation(
-                request.getLocation()
-        );
+                                rfh.getDeleteRemark(),
 
-        rfh.setLocationPreferred(
-                request.getLocationPreferred()
-        );
+                                rfh.getApprovalHirePath(),
 
-        rfh.setBusiness(
-                request.getBusiness()
-        );
+                                rfh.getRequestDate(),
 
-        rfh.setBand(
-                request.getBand()
-        );
+                                rfh.getRequestBy(),
 
-        rfh.setDivision(
-                request.getDivision()
-        );
+                                rfh.getApproveDate(),
 
-        rfh.setFunction(
-                request.getFunction()
-        );
+                                rfh.getDepartment(),
 
-        rfh.setNoOfPositions(
-                request.getNoOfPositions()
-        );
+                                rfh.getDesignation(),
 
-        rfh.setJdRoles(
-                request.getJdRoles()
-        );
+                                rfh.getVertical(),
 
-        rfh.setQualification(
-                request.getQualification()
-        );
+                                rfh.getTenDoj(),
 
-        rfh.setEssentialSkill(
-                request.getEssentialSkill()
-        );
+                                rfh.getEmpCategory(),
 
-        rfh.setGoodSkill(
-                request.getGoodSkill()
-        );
+                                rfh.getType(),
 
-        rfh.setExperience(
-                request.getExperience()
-        );
+                                rfh.getAttendanceFormat(),
 
-        rfh.setSalaryRange(
-                request.getSalaryRange()
-        );
+                                rfh.getWeekOff(),
 
-        rfh.setSalaryRangeAnnual(
-                request.getSalaryRangeAnnual()
-        );
+                                rfh.getCkSupervisior(),
 
-        rfh.setAnySpecific(
-                request.getAnySpecific()
-        );
+                                rfh.getCkMail(),
 
-        rfh.setDeleteRemark(
-                request.getDeleteRemark()
-        );
+                                rfh.getApproverId(),
 
-        rfh.setApprovalHirePath(
-                request.getApprovalHirePath()
-        );
+                                rfh.getReporterId(),
 
-        rfh.setRequestDate(
-                request.getRequestDate()
-        );
-
-        rfh.setApproveDate(
-                request.getApproveDate()
-        );
-
-        rfh.setDepartment(
-                request.getDepartment()
-        );
-
-        rfh.setDesignation(
-                request.getDesignation()
-        );
-
-        rfh.setVertical(
-                request.getVertical()
-        );
-
-        rfh.setTenDoj(
-                request.getTenDoj()
-        );
-
-        rfh.setEmpCategory(
-                request.getEmpCategory()
-        );
-
-        rfh.setType(
-                request.getType()
-        );
-
-        rfh.setAttendanceFormat(
-                request.getAttendanceFormat()
-        );
-
-        rfh.setWeekOff(
-                request.getWeekOff()
-        );
-
-        rfh.setCkSupervisior(
-                request.getCkSupervisior()
-        );
-
-        rfh.setCkMail(
-                request.getCkMail()
-        );
-
-        rfh.setApproverId(
-                request.getApproverId()
-        );
-
-        rfh.setReporterId(
-                request.getReporterId()
-        );
-
-        rfh.setClientName(
-                request.getClientName()
-        );
-
-
-        Rfh updated =
-                repository.save(rfh);
-
-
-        return mapToResponse(updated);
-    }
-
-
-    @Override
-    public void delete(
-            Long id,
-            String remark) {
-
-        Rfh rfh =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "RFH not found: "
-                                                + id
-                                )
-                        );
-
-
-        rfh.setDeleteStatus(1);
-
-        rfh.setDeleteRemark(
-                remark != null
-                        ? remark
-                        : "Deleted"
-        );
-
-
-        repository.save(rfh);
-    }
-
-
-    private RfhResponse mapToResponse(
-            Rfh rfh) {
-
-        return new RfhResponse(
-
-                rfh.getId(),
-                rfh.getResId(),
-                rfh.getRollsOption(),
-                rfh.getName(),
-                rfh.getMobile(),
-                rfh.getEmail(),
-                rfh.getPositionReports(),
-                rfh.getReportEmail(),
-                rfh.getCostCenter(),
-                rfh.getApprovedBy(),
-                rfh.getRequestType(),
-                rfh.getReplacementOf(),
-                rfh.getApprovalHire(),
-                rfh.getTicketNumber(),
-                rfh.getPositionTitle(),
-                rfh.getLocation(),
-                rfh.getLocationPreferred(),
-                rfh.getBusiness(),
-                rfh.getBand(),
-                rfh.getDivision(),
-                rfh.getFunction(),
-                rfh.getNoOfPositions(),
-                rfh.getJdRoles(),
-                rfh.getQualification(),
-                rfh.getEssentialSkill(),
-                rfh.getGoodSkill(),
-                rfh.getExperience(),
-                rfh.getSalaryRange(),
-                rfh.getSalaryRangeAnnual(),
-                rfh.getAnySpecific(),
-                rfh.getCreatedDate(),
-                rfh.getDeleteStatus(),
-                rfh.getDeleteRemark(),
-                rfh.getApprovalHirePath(),
-                rfh.getRequestDate(),
-                rfh.getRequestBy(),
-                rfh.getApproveDate(),
-                rfh.getDepartment(),
-                rfh.getDesignation(),
-                rfh.getVertical(),
-                rfh.getTenDoj(),
-                rfh.getEmpCategory(),
-                rfh.getType(),
-                rfh.getAttendanceFormat(),
-                rfh.getWeekOff(),
-                rfh.getCkSupervisior(),
-                rfh.getCkMail(),
-                rfh.getApproverId(),
-                rfh.getReporterId(),
-                rfh.getClientName()
-        );
-    }
+                                rfh.getClientName());
+        }
 }

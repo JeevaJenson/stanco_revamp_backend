@@ -7,32 +7,26 @@ import java.util.List;
 
 public interface RfhService {
 
-    RfhResponse create(
-            RfhRequest request,
-            String requestBy
-    );
+        RfhResponse create(
+                        RfhRequest request,
+                        String requestBy);
 
-    List<RfhResponse> getAll();
+        List<RfhResponse> getAll();
 
-    RfhResponse getById(
-            Long id
-    );
+        RfhResponse getById(
+                        Long id);
 
-    RfhResponse getByResId(
-            String resId
-    );
+        RfhResponse getByResId(
+                        String resId);
 
-    List<RfhResponse> getMyRfh(
-            String requestBy
-    );
+        List<RfhResponse> getMyRfh(
+                        String requestBy);
 
-    RfhResponse update(
-            Long id,
-            RfhRequest request
-    );
+        RfhResponse update(
+                        Long id,
+                        RfhRequest request);
 
-    void delete(
-            Long id,
-            String remark
-    );
+        void delete(
+                        Long id,
+                        String remark);
 }
