@@ -23,9 +23,7 @@ public class RfhController {
 
         @PostMapping
         public ResponseEntity<RfhResponse> create(
-
                         @Valid @RequestBody RfhRequest request,
-
                         Authentication authentication) {
 
                 String empID = authentication.getName();
@@ -71,9 +69,7 @@ public class RfhController {
 
         @PutMapping("/{id}")
         public ResponseEntity<RfhResponse> update(
-
                         @PathVariable Long id,
-
                         @Valid @RequestBody RfhRequest request) {
 
                 return ResponseEntity.ok(
@@ -84,9 +80,7 @@ public class RfhController {
 
         @DeleteMapping("/{id}")
         public ResponseEntity<String> delete(
-
                         @PathVariable Long id,
-
                         @RequestParam(required = false) String remark) {
 
                 service.delete(

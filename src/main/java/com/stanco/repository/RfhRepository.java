@@ -7,18 +7,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface RfhRepository
-                extends JpaRepository<Rfh, Long> {
+public interface RfhRepository extends JpaRepository<Rfh, Long> {
 
-        Optional<Rfh> findByResId(
-                        String resId);
+        Optional<Rfh> findByResId(String resId);
 
-        List<Rfh> findByDeleteStatus(
-                        Integer deleteStatus);
+        Optional<Rfh> findByTicketNumber(String ticketNumber);
 
-        List<Rfh> findByRequestBy(
-                        String requestBy);
+        List<Rfh> findByDeleteStatus(Integer deleteStatus);
 
-        boolean existsByResId(
-                        String resId);
+        List<Rfh> findByRequestBy(String requestBy);
+
+        boolean existsByResId(String resId);
+
+        boolean existsByTicketNumber(String ticketNumber);
 }

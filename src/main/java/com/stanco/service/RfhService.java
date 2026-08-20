@@ -13,14 +13,11 @@ public interface RfhService {
 
         List<RfhResponse> getAll();
 
-        RfhResponse getById(
-                        Long id);
+        RfhResponse getById(Long id);
 
-        RfhResponse getByResId(
-                        String resId);
+        RfhResponse getByResId(String resId);
 
-        List<RfhResponse> getMyRfh(
-                        String requestBy);
+        List<RfhResponse> getMyRfh(String requestBy);
 
         RfhResponse update(
                         Long id,

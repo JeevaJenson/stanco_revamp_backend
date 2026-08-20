@@ -9,6 +9,9 @@ public class RfhRequest {
 
     private String resId;
 
+   
+    private String ticketNumber;
+
     private String rollsOption;
 
     private String name;
