@@ -46,11 +46,17 @@ public class RecruitmentRequestResponse {
 
     private LocalDate closeDate;
 
+    // =====================================================
+    // ALLOCATION
+    // =====================================================
+
     private String assignedStatus;
 
     private String assignedTo;
 
     private String assignedDate;
+
+    // =====================================================
 
     private String heplRecruitmentRefNumber;
 

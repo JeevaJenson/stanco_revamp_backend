@@ -1,15 +1,11 @@
 package com.stanco.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-
 import lombok.Data;
 
 @Data
 public class RfhRequest {
 
-    private String resId;
-
-   
     private String ticketNumber;
 
     private String rollsOption;
@@ -24,17 +20,33 @@ public class RfhRequest {
 
     private String reportEmail;
 
+    // =====================================================
+    // REQUEST RAISED BY
+    // =====================================================
+
     private String costCenter;
 
     private String approvedBy;
 
-    @NotBlank
+    // =====================================================
+    // BASIC DETAILS
+    // =====================================================
+
+    @NotBlank(message = "Request Type is required")
     private String requestType;
 
-    @NotBlank
     private String replacementOf;
 
     private String approvalHire;
+
+    private String requestDate;
+
+    @NotBlank(message = "Client Name is required")
+    private String clientName;
+
+    // =====================================================
+    // POSITION DETAILS
+    // =====================================================
 
     private String positionTitle;
 
@@ -44,13 +56,17 @@ public class RfhRequest {
 
     private String business;
 
-    private String band;
+    private String vertical;
 
     private String division;
 
     private String function;
 
     private String noOfPositions;
+
+    // =====================================================
+    // JOB REQUIREMENTS
+    // =====================================================
 
     private String jdRoles;
 
@@ -60,19 +76,37 @@ public class RfhRequest {
 
     private String goodSkill;
 
+    // =====================================================
+    // COMPENSATION
+    // =====================================================
+
     private String experience;
 
     private String salaryRange;
 
     private String salaryRangeAnnual;
 
+    // =====================================================
+    // CATEGORY
+    // =====================================================
+
+    private String empCategory;
+
+    private String type;
+
+    // =====================================================
+    // ADDITIONAL
+    // =====================================================
+
     private String anySpecific;
+
+    // =====================================================
+    // OTHER BACKEND FIELDS
+    // =====================================================
 
     private String deleteRemark;
 
     private Integer approvalHirePath;
-
-    private String requestDate;
 
     private String approveDate;
 
@@ -80,13 +114,7 @@ public class RfhRequest {
 
     private String designation;
 
-    private String vertical;
-
     private String tenDoj;
-
-    private String empCategory;
-
-    private String type;
 
     private String attendanceFormat;
 
@@ -99,7 +127,4 @@ public class RfhRequest {
     private String approverId;
 
     private String reporterId;
-
-    @NotBlank
-    private String clientName;
 }

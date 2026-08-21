@@ -11,7 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "recruitment_requests")
+@Table(name = "recruitment_requests", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_recruitment_rec_req_id", columnNames = "recReqID")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,8 +24,7 @@ public class RecruitmentRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(name = "`recReqID`", nullable = false)
+    @Column(name = "`recReqID`", nullable = false, unique = true)
     private String recReqID;
 
     @Column(name = "rfh_no")
@@ -74,6 +75,10 @@ public class RecruitmentRequest {
     @Column(name = "close_date")
     private LocalDate closeDate;
 
+    // =====================================================
+    // ALLOCATION
+    // =====================================================
+
     @Column(name = "assigned_status")
     private String assignedStatus;
 
@@ -82,6 +87,8 @@ public class RecruitmentRequest {
 
     @Column(name = "assigned_date")
     private String assignedDate;
+
+    // =====================================================
 
     @Column(name = "hepl_recruitment_ref_number")
     private String heplRecruitmentRefNumber;
@@ -101,15 +108,12 @@ public class RecruitmentRequest {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "delete_status", nullable = false)
+    @Column(name = "delete_status")
     private Integer deleteStatus;
 
-    @Column(
-            name = "sub_position_title",
-            columnDefinition = "TEXT"
-    )
+    @Column(name = "sub_position_title", columnDefinition = "TEXT")
     private String subPositionTitle;
 
-    @Column(name = "closed_by", nullable = false)
+    @Column(name = "closed_by")
     private String closedBy;
 }

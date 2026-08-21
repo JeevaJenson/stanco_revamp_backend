@@ -25,6 +25,9 @@ public class Rfh {
         @Column(name = "res_id", unique = true)
         private String resId;
 
+        @Column(name = "ticket_number", unique = true)
+        private String ticketNumber;
+
         @Column(name = "rolls_option")
         private String rollsOption;
 
@@ -52,14 +55,11 @@ public class Rfh {
         @Column(name = "request_type", nullable = false)
         private String requestType;
 
-        @Column(name = "replacement_of", nullable = false)
+        @Column(name = "replacement_of")
         private String replacementOf;
 
         @Column(name = "approval_hire")
         private String approvalHire;
-
-        @Column(name = "ticket_number", unique = true)
-        private String ticketNumber;
 
         @Column(name = "position_title")
         private String positionTitle;
@@ -73,8 +73,8 @@ public class Rfh {
         @Column(name = "business")
         private String business;
 
-        @Column(name = "band")
-        private String band;
+        @Column(name = "vertical")
+        private String vertical;
 
         @Column(name = "division")
         private String division;
@@ -106,25 +106,31 @@ public class Rfh {
         @Column(name = "salary_range_annual")
         private String salaryRangeAnnual;
 
+        @Column(name = "emp_category")
+        private String empCategory;
+
+        @Column(name = "type")
+        private String type;
+
         @Column(name = "any_specific", columnDefinition = "TEXT")
         private String anySpecific;
 
         @Column(name = "created_date")
         private LocalDateTime createdDate;
 
-        @Column(name = "delete_status", nullable = false)
+        @Column(name = "delete_status")
         private Integer deleteStatus;
 
-        @Column(name = "delete_remark", nullable = false, columnDefinition = "TEXT")
+        @Column(name = "delete_remark", columnDefinition = "TEXT")
         private String deleteRemark;
 
-        @Column(name = "approval_hire_path", nullable = false)
+        @Column(name = "approval_hire_path")
         private Integer approvalHirePath;
 
         @Column(name = "request_date")
         private String requestDate;
 
-        @Column(name = "request_by", nullable = false)
+        @Column(name = "request_by")
         private String requestBy;
 
         @Column(name = "approve_date")
@@ -136,17 +142,8 @@ public class Rfh {
         @Column(name = "designation")
         private String designation;
 
-        @Column(name = "vertical")
-        private String vertical;
-
         @Column(name = "ten_doj")
         private String tenDoj;
-
-        @Column(name = "emp_category")
-        private String empCategory;
-
-        @Column(name = "type")
-        private String type;
 
         @Column(name = "attendance_format")
         private String attendanceFormat;
@@ -166,6 +163,6 @@ public class Rfh {
         @Column(name = "reporter_id")
         private String reporterId;
 
-        @Column(name = "client_name", nullable = false)
+        @Column(name = "client_name")
         private String clientName;
 }

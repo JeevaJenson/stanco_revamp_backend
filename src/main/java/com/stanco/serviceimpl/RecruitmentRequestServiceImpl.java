@@ -1,12 +1,10 @@
 package com.stanco.serviceimpl;
 
+import com.stanco.dto.request.RecruitmentAllocationRequest;
 import com.stanco.dto.request.RecruitmentRequestRequest;
 import com.stanco.dto.response.RecruitmentRequestResponse;
-
 import com.stanco.entity.RecruitmentRequest;
-
 import com.stanco.repository.RecruitmentRequestRepository;
-
 import com.stanco.service.RecruitmentRequestService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,125 +32,128 @@ public class RecruitmentRequestServiceImpl
                         RecruitmentRequestRequest request,
                         String createdBy) {
 
-                // -----------------------------------------------------
-                // CHECK DUPLICATE REC REQ ID
-                // -----------------------------------------------------
-
-                if (repository.existsByRecReqID(
-                                request.getRecReqID())) {
+                if (request.getRecReqID() != null
+                                && repository.existsByRecReqID(
+                                                request.getRecReqID())) {
 
                         throw new RuntimeException(
                                         "Recruitment Request ID already exists: "
                                                         + request.getRecReqID());
                 }
 
-                // -----------------------------------------------------
-                // CREATE ENTITY
-                // -----------------------------------------------------
+                RecruitmentRequest entity = new RecruitmentRequest();
 
-                RecruitmentRequest recruitmentRequest = new RecruitmentRequest();
+                // =====================================================
+                // BASIC DETAILS
+                // =====================================================
 
-                recruitmentRequest.setRecReqID(
+                entity.setRecReqID(
                                 request.getRecReqID());
 
-                recruitmentRequest.setRfhNo(
+                entity.setRfhNo(
                                 request.getRfhNo());
 
-                recruitmentRequest.setPositionTitle(
+                entity.setPositionTitle(
                                 request.getPositionTitle());
 
-                recruitmentRequest.setNoOfPosition(
+                entity.setNoOfPosition(
                                 request.getNoOfPosition());
 
-                recruitmentRequest.setBand(
+                entity.setBand(
                                 request.getBand());
 
-                recruitmentRequest.setOpenDate(
+                entity.setOpenDate(
                                 request.getOpenDate());
 
-                recruitmentRequest.setCriticalPosition(
+                entity.setCriticalPosition(
                                 request.getCriticalPosition());
 
-                recruitmentRequest.setBusiness(
+                // =====================================================
+                // ORGANIZATION
+                // =====================================================
+
+                entity.setBusiness(
                                 request.getBusiness());
 
-                recruitmentRequest.setDivision(
+                entity.setDivision(
                                 request.getDivision());
 
-                recruitmentRequest.setFunction(
+                entity.setFunction(
                                 request.getFunction());
 
-                recruitmentRequest.setLocation(
+                entity.setLocation(
                                 request.getLocation());
 
-                recruitmentRequest.setBillingStatus(
+                // =====================================================
+                // OTHER DETAILS
+                // =====================================================
+
+                entity.setBillingStatus(
                                 request.getBillingStatus());
 
-                recruitmentRequest.setInterviewer(
+                entity.setInterviewer(
                                 request.getInterviewer());
 
-                recruitmentRequest.setSalaryRange(
+                entity.setSalaryRange(
                                 request.getSalaryRange());
 
-                recruitmentRequest.setSalaryRangeAnnual(
+                entity.setSalaryRangeAnnual(
                                 request.getSalaryRangeAnnual());
 
-                recruitmentRequest.setRequestStatus(
-                                request.getRequestStatus());
+                entity.setRequestStatus(
+                                request.getRequestStatus() != null
+                                                ? request.getRequestStatus()
+                                                : "OPEN");
 
-                recruitmentRequest.setCloseDate(
+                entity.setCloseDate(
                                 request.getCloseDate());
 
-                // =====================================================
-                // ALLOCATION
-                // =====================================================
-
-                recruitmentRequest.setAssignedStatus(
-                                "Unassigned");
-
-                recruitmentRequest.setAssignedTo(
-                                null);
-
-                recruitmentRequest.setAssignedDate(
-                                null);
-
-                // =====================================================
-                // OTHER FIELDS
-                // =====================================================
-
-                recruitmentRequest.setHeplRecruitmentRefNumber(
+                entity.setHeplRecruitmentRefNumber(
                                 request.getHeplRecruitmentRefNumber());
 
-                recruitmentRequest.setActionForTheDayStatus(
+                entity.setActionForTheDayStatus(
                                 request.getActionForTheDayStatus());
 
-                recruitmentRequest.setCreatedBy(
-                                createdBy);
-
-                recruitmentRequest.setModifiedBy(
-                                null);
-
-                recruitmentRequest.setCreatedAt(
-                                LocalDateTime.now());
-
-                recruitmentRequest.setUpdatedAt(
-                                LocalDateTime.now());
-
-                recruitmentRequest.setDeleteStatus(
-                                0);
-
-                recruitmentRequest.setSubPositionTitle(
+                entity.setSubPositionTitle(
                                 request.getSubPositionTitle());
 
-                recruitmentRequest.setClosedBy(
+                entity.setClosedBy(
                                 request.getClosedBy());
+
+                // =====================================================
+                // ALLOCATION INITIAL STATE
+                // =====================================================
+
+                entity.setAssignedStatus(
+                                "Unassigned");
+
+                entity.setAssignedTo(null);
+
+                entity.setAssignedDate(null);
+
+                // =====================================================
+                // AUDIT
+                // =====================================================
+
+                entity.setCreatedBy(
+                                createdBy);
+
+                entity.setModifiedBy(
+                                createdBy);
+
+                entity.setCreatedAt(
+                                LocalDateTime.now());
+
+                entity.setUpdatedAt(
+                                LocalDateTime.now());
+
+                entity.setDeleteStatus(0);
 
                 // =====================================================
                 // SAVE
                 // =====================================================
 
-                RecruitmentRequest saved = repository.save(
-                                recruitmentRequest);
+                RecruitmentRequest saved = repository.save(entity);
 
                 return mapToResponse(saved);
         }
@@ -162,6 +163,7 @@ public class RecruitmentRequestServiceImpl
         // =========================================================
 
         @Override
+        @Transactional(readOnly = true)
         public List<RecruitmentRequestResponse> getAll() {
 
                 return repository
@@ -176,28 +178,16 @@ public class RecruitmentRequestServiceImpl
         // =========================================================
 
         @Override
+        @Transactional(readOnly = true)
         public RecruitmentRequestResponse getById(
                         Long id) {
 
-                RecruitmentRequest recruitmentRequest = repository.findById(id)
+                RecruitmentRequest entity = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                // -----------------------------------------------------
-                // DO NOT RETURN DELETED RECORD
-                // -----------------------------------------------------
-
-                if (recruitmentRequest.getDeleteStatus() != null
-                                && recruitmentRequest.getDeleteStatus() == 1) {
-
-                        throw new RuntimeException(
-                                        "Recruitment Request is deleted: "
-                                                        + id);
-                }
-
-                return mapToResponse(
-                                recruitmentRequest);
+                return mapToResponse(entity);
         }
 
         // =========================================================
@@ -205,48 +195,81 @@ public class RecruitmentRequestServiceImpl
         // =========================================================
 
         @Override
+        @Transactional(readOnly = true)
         public RecruitmentRequestResponse getByRecReqID(
                         String recReqID) {
 
-                RecruitmentRequest recruitmentRequest = repository.findByRecReqID(
-                                recReqID)
+                RecruitmentRequest entity = repository.findByRecReqID(recReqID)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + recReqID));
 
-                if (recruitmentRequest.getDeleteStatus() != null
-                                && recruitmentRequest.getDeleteStatus() == 1) {
-
-                        throw new RuntimeException(
-                                        "Recruitment Request is deleted: "
-                                                        + recReqID);
-                }
-
-                return mapToResponse(
-                                recruitmentRequest);
+                return mapToResponse(entity);
         }
 
         // =========================================================
-        // GET MY REQUESTS
+        // GET MY ALLOCATED REQUESTS
         // =========================================================
 
         @Override
+        @Transactional(readOnly = true)
         public List<RecruitmentRequestResponse> getMyRequests(
                         String empID) {
 
                 return repository
-                                .findByAssignedTo(empID)
+                                .findByAssignedToAndAssignedStatus(
+                                                empID,
+                                                "Assigned")
                                 .stream()
-                                .filter(request -> request.getDeleteStatus() == null
-                                                || request.getDeleteStatus() == 0)
-                                .filter(request -> "Assigned".equalsIgnoreCase(
-                                                request.getAssignedStatus()))
+                                .filter(this::isActive)
                                 .map(this::mapToResponse)
                                 .toList();
         }
 
         // =========================================================
-        // UPDATE
+        // GET ALL ALLOCATED
+        // =========================================================
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<RecruitmentRequestResponse> getAllocatedRequests() {
+
+                return repository
+                                .findByDeleteStatus(0)
+                                .stream()
+                                .filter(entity -> "Assigned".equalsIgnoreCase(
+                                                entity.getAssignedStatus()))
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        // =========================================================
+        // GET UNALLOCATED
+        // =========================================================
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<RecruitmentRequestResponse> getUnallocatedRequests() {
+
+                return repository
+                                .findByDeleteStatus(0)
+                                .stream()
+                                .filter(entity ->
+
+                                entity.getAssignedStatus() == null
+
+                                                ||
+
+                                                "Unassigned".equalsIgnoreCase(
+                                                                entity.getAssignedStatus())
+
+                                )
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        // =========================================================
+        // NORMAL UPDATE
         // =========================================================
 
         @Override
@@ -255,164 +278,188 @@ public class RecruitmentRequestServiceImpl
                         RecruitmentRequestRequest request,
                         String modifiedBy) {
 
-                // -----------------------------------------------------
-                // FIND EXISTING RECORD
-                // -----------------------------------------------------
-
-                RecruitmentRequest existing = repository.findById(id)
+                RecruitmentRequest entity = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                // -----------------------------------------------------
-                // PREVENT UPDATE OF DELETED RECORD
-                // -----------------------------------------------------
-
-                if (existing.getDeleteStatus() != null
-                                && existing.getDeleteStatus() == 1) {
-
-                        throw new RuntimeException(
-                                        "Cannot update deleted Recruitment Request: "
-                                                        + id);
-                }
-
                 // =====================================================
-                // BASIC DATA
+                // BASIC DETAILS
                 // =====================================================
 
-                existing.setRecReqID(
+                entity.setRecReqID(
                                 request.getRecReqID());
 
-                existing.setRfhNo(
+                entity.setRfhNo(
                                 request.getRfhNo());
 
-                existing.setPositionTitle(
+                entity.setPositionTitle(
                                 request.getPositionTitle());
 
-                existing.setNoOfPosition(
+                entity.setNoOfPosition(
                                 request.getNoOfPosition());
 
-                existing.setBand(
+                entity.setBand(
                                 request.getBand());
 
-                existing.setOpenDate(
+                entity.setOpenDate(
                                 request.getOpenDate());
 
-                existing.setCriticalPosition(
+                entity.setCriticalPosition(
                                 request.getCriticalPosition());
 
-                existing.setBusiness(
+                // =====================================================
+                // ORGANIZATION
+                // =====================================================
+
+                entity.setBusiness(
                                 request.getBusiness());
 
-                existing.setDivision(
+                entity.setDivision(
                                 request.getDivision());
 
-                existing.setFunction(
+                entity.setFunction(
                                 request.getFunction());
 
-                existing.setLocation(
+                entity.setLocation(
                                 request.getLocation());
 
-                existing.setBillingStatus(
+                // =====================================================
+                // OTHER DETAILS
+                // =====================================================
+
+                entity.setBillingStatus(
                                 request.getBillingStatus());
 
-                existing.setInterviewer(
+                entity.setInterviewer(
                                 request.getInterviewer());
 
-                existing.setSalaryRange(
+                entity.setSalaryRange(
                                 request.getSalaryRange());
 
-                existing.setSalaryRangeAnnual(
+                entity.setSalaryRangeAnnual(
                                 request.getSalaryRangeAnnual());
 
-                existing.setRequestStatus(
+                entity.setRequestStatus(
                                 request.getRequestStatus());
 
-                existing.setCloseDate(
+                entity.setCloseDate(
                                 request.getCloseDate());
 
-                // =====================================================
-                // ALLOCATION DATA
-                // =====================================================
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * Allocate button frontend sends:
-                 *
-                 * assignedStatus = Assigned
-                 * assignedTo = recruiter ID
-                 * assignedDate = date
-                 *
-                 * So these values are updated here.
-                 */
-
-                if (request.getAssignedStatus() != null
-                                && !request
-                                                .getAssignedStatus()
-                                                .trim()
-                                                .isEmpty()) {
-
-                        existing.setAssignedStatus(
-                                        request.getAssignedStatus());
-
-                }
-
-                if (request.getAssignedTo() != null
-                                && !request
-                                                .getAssignedTo()
-                                                .trim()
-                                                .isEmpty()) {
-
-                        existing.setAssignedTo(
-                                        request.getAssignedTo());
-
-                }
-
-                if (request.getAssignedDate() != null
-                                && !request
-                                                .getAssignedDate()
-                                                .trim()
-                                                .isEmpty()) {
-
-                        existing.setAssignedDate(
-                                        request.getAssignedDate());
-
-                }
-
-                // =====================================================
-                // OTHER DATA
-                // =====================================================
-
-                existing.setHeplRecruitmentRefNumber(
+                entity.setHeplRecruitmentRefNumber(
                                 request.getHeplRecruitmentRefNumber());
 
-                existing.setActionForTheDayStatus(
+                entity.setActionForTheDayStatus(
                                 request.getActionForTheDayStatus());
 
-                existing.setSubPositionTitle(
+                entity.setSubPositionTitle(
                                 request.getSubPositionTitle());
 
-                existing.setClosedBy(
+                entity.setClosedBy(
                                 request.getClosedBy());
 
                 // =====================================================
-                // AUDIT
+                // IMPORTANT
                 // =====================================================
+                // Do NOT update:
+                //
+                // assignedStatus
+                // assignedTo
+                // assignedDate
+                //
+                // Allocation is handled only by allocate().
 
-                existing.setModifiedBy(
+                entity.setModifiedBy(
                                 modifiedBy);
 
-                existing.setUpdatedAt(
+                entity.setUpdatedAt(
+                                LocalDateTime.now());
+
+                RecruitmentRequest updated = repository.save(entity);
+
+                return mapToResponse(updated);
+        }
+
+        // =========================================================
+        // ALLOCATE RECRUITER
+        // =========================================================
+
+        @Override
+        public RecruitmentRequestResponse allocate(
+                        Long id,
+                        RecruitmentAllocationRequest request,
+                        String modifiedBy) {
+
+                RecruitmentRequest entity = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Recruitment Request not found: "
+                                                                + id));
+
+                // =====================================================
+                // DELETED CHECK
+                // =====================================================
+
+                if (entity.getDeleteStatus() != null
+                                && entity.getDeleteStatus() == 1) {
+
+                        throw new RuntimeException(
+                                        "Cannot allocate deleted recruitment request");
+                }
+
+                // =====================================================
+                // RECRUITER ID
+                // =====================================================
+
+                if (request.getAssignedTo() == null
+                                || request.getAssignedTo()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        throw new RuntimeException(
+                                        "Recruiter ID is required");
+                }
+
+                // =====================================================
+                // DATE
+                // =====================================================
+
+                if (request.getAssignedDate() == null
+                                || request.getAssignedDate()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        throw new RuntimeException(
+                                        "Allocation date is required");
+                }
+
+                // =====================================================
+                // UPDATE ALLOCATION
+                // =====================================================
+
+                entity.setAssignedStatus(
+                                "Assigned");
+
+                entity.setAssignedTo(
+                                request.getAssignedTo()
+                                                .trim());
+
+                entity.setAssignedDate(
+                                request.getAssignedDate()
+                                                .trim());
+
+                entity.setModifiedBy(
+                                modifiedBy);
+
+                entity.setUpdatedAt(
                                 LocalDateTime.now());
 
                 // =====================================================
-                // SAVE
+                // SAVE TO DATABASE
                 // =====================================================
 
-                RecruitmentRequest updated = repository.save(existing);
+                RecruitmentRequest saved = repository.save(entity);
 
-                return mapToResponse(updated);
+                return mapToResponse(saved);
         }
 
         // =========================================================
@@ -424,94 +471,102 @@ public class RecruitmentRequestServiceImpl
                         Long id,
                         String modifiedBy) {
 
-                RecruitmentRequest recruitmentRequest = repository.findById(id)
+                RecruitmentRequest entity = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                // -----------------------------------------------------
-                // SOFT DELETE
-                // -----------------------------------------------------
+                entity.setDeleteStatus(1);
 
-                recruitmentRequest.setDeleteStatus(1);
-
-                recruitmentRequest.setModifiedBy(
+                entity.setModifiedBy(
                                 modifiedBy);
 
-                recruitmentRequest.setUpdatedAt(
+                entity.setUpdatedAt(
                                 LocalDateTime.now());
 
-                repository.save(
-                                recruitmentRequest);
+                repository.save(entity);
         }
 
         // =========================================================
-        // ENTITY → RESPONSE
+        // ACTIVE CHECK
+        // =========================================================
+
+        private boolean isActive(
+                        RecruitmentRequest entity) {
+
+                return entity.getDeleteStatus() == null
+                                || entity.getDeleteStatus() == 0;
+        }
+
+        // =========================================================
+        // ENTITY -> RESPONSE
         // =========================================================
 
         private RecruitmentRequestResponse mapToResponse(
-                        RecruitmentRequest request) {
+                        RecruitmentRequest entity) {
 
                 return new RecruitmentRequestResponse(
 
-                                request.getId(),
+                                entity.getId(),
 
-                                request.getRecReqID(),
+                                entity.getRecReqID(),
 
-                                request.getRfhNo(),
+                                entity.getRfhNo(),
 
-                                request.getPositionTitle(),
+                                entity.getPositionTitle(),
 
-                                request.getNoOfPosition(),
+                                entity.getNoOfPosition(),
 
-                                request.getBand(),
+                                entity.getBand(),
 
-                                request.getOpenDate(),
+                                entity.getOpenDate(),
 
-                                request.getCriticalPosition(),
+                                entity.getCriticalPosition(),
 
-                                request.getBusiness(),
+                                entity.getBusiness(),
 
-                                request.getDivision(),
+                                entity.getDivision(),
 
-                                request.getFunction(),
+                                entity.getFunction(),
 
-                                request.getLocation(),
+                                entity.getLocation(),
 
-                                request.getBillingStatus(),
+                                entity.getBillingStatus(),
 
-                                request.getInterviewer(),
+                                entity.getInterviewer(),
 
-                                request.getSalaryRange(),
+                                entity.getSalaryRange(),
 
-                                request.getSalaryRangeAnnual(),
+                                entity.getSalaryRangeAnnual(),
 
-                                request.getRequestStatus(),
+                                entity.getRequestStatus(),
 
-                                request.getCloseDate(),
+                                entity.getCloseDate(),
 
-                                request.getAssignedStatus(),
+                                // Allocation
+                                entity.getAssignedStatus(),
 
-                                request.getAssignedTo(),
+                                entity.getAssignedTo(),
 
-                                request.getAssignedDate(),
+                                entity.getAssignedDate(),
 
-                                request.getHeplRecruitmentRefNumber(),
+                                entity.getHeplRecruitmentRefNumber(),
 
-                                request.getActionForTheDayStatus(),
+                                entity.getActionForTheDayStatus(),
 
-                                request.getCreatedBy(),
+                                // Audit
+                                entity.getCreatedBy(),
 
-                                request.getModifiedBy(),
+                                entity.getModifiedBy(),
 
-                                request.getCreatedAt(),
+                                entity.getCreatedAt(),
 
-                                request.getUpdatedAt(),
+                                entity.getUpdatedAt(),
 
-                                request.getDeleteStatus(),
+                                entity.getDeleteStatus(),
 
-                                request.getSubPositionTitle(),
+                                entity.getSubPositionTitle(),
 
-                                request.getClosedBy());
+                                entity.getClosedBy());
         }
 }

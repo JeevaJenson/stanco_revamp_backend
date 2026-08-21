@@ -1,5 +1,6 @@
 package com.stanco.service;
 
+import com.stanco.dto.request.RecruitmentAllocationRequest;
 import com.stanco.dto.request.RecruitmentRequestRequest;
 import com.stanco.dto.response.RecruitmentRequestResponse;
 
@@ -7,33 +8,77 @@ import java.util.List;
 
 public interface RecruitmentRequestService {
 
-    RecruitmentRequestResponse create(
-            RecruitmentRequestRequest request,
-            String createdBy
-    );
+        // =====================================================
+        // CREATE
+        // =====================================================
 
-    List<RecruitmentRequestResponse> getAll();
+        RecruitmentRequestResponse create(
+                        RecruitmentRequestRequest request,
+                        String createdBy);
 
-    RecruitmentRequestResponse getById(
-            Long id
-    );
+        // =====================================================
+        // GET ALL
+        // =====================================================
 
-    RecruitmentRequestResponse getByRecReqID(
-            String recReqID
-    );
+        List<RecruitmentRequestResponse> getAll();
 
-    List<RecruitmentRequestResponse> getMyRequests(
-            String empID
-    );
+        // =====================================================
+        // GET BY ID
+        // =====================================================
 
-    RecruitmentRequestResponse update(
-            Long id,
-            RecruitmentRequestRequest request,
-            String modifiedBy
-    );
+        RecruitmentRequestResponse getById(
+                        Long id);
 
-    void delete(
-            Long id,
-            String modifiedBy
-    );
+        // =====================================================
+        // GET BY REC REQ ID
+        // =====================================================
+
+        RecruitmentRequestResponse getByRecReqID(
+                        String recReqID);
+
+        // =====================================================
+        // GET MY ALLOCATED REQUESTS
+        // Logged-in recruiter records only
+        // =====================================================
+
+        List<RecruitmentRequestResponse> getMyRequests(
+                        String empID);
+
+        // =====================================================
+        // GET ALL ALLOCATED
+        // =====================================================
+
+        List<RecruitmentRequestResponse> getAllocatedRequests();
+
+        // =====================================================
+        // GET ALL UNALLOCATED
+        // =====================================================
+
+        List<RecruitmentRequestResponse> getUnallocatedRequests();
+
+        // =====================================================
+        // NORMAL UPDATE
+        // =====================================================
+
+        RecruitmentRequestResponse update(
+                        Long id,
+                        RecruitmentRequestRequest request,
+                        String modifiedBy);
+
+        // =====================================================
+        // ALLOCATE RECRUITER
+        // =====================================================
+
+        RecruitmentRequestResponse allocate(
+                        Long id,
+                        RecruitmentAllocationRequest request,
+                        String modifiedBy);
+
+        // =====================================================
+        // DELETE
+        // =====================================================
+
+        void delete(
+                        Long id,
+                        String modifiedBy);
 }

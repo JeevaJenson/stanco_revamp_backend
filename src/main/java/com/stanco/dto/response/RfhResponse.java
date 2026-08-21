@@ -13,6 +13,8 @@ public class RfhResponse {
 
     private String resId;
 
+    private String ticketNumber;
+
     private String rollsOption;
 
     private String name;
@@ -35,8 +37,6 @@ public class RfhResponse {
 
     private String approvalHire;
 
-    private String ticketNumber;
-
     private String positionTitle;
 
     private String location;
@@ -45,7 +45,7 @@ public class RfhResponse {
 
     private String business;
 
-    private String band;
+    private String vertical;
 
     private String division;
 
@@ -67,6 +67,10 @@ public class RfhResponse {
 
     private String salaryRangeAnnual;
 
+    private String empCategory;
+
+    private String type;
+
     private String anySpecific;
 
     private LocalDateTime createdDate;
@@ -87,13 +91,7 @@ public class RfhResponse {
 
     private String designation;
 
-    private String vertical;
-
     private String tenDoj;
-
-    private String empCategory;
-
-    private String type;
 
     private String attendanceFormat;
 
