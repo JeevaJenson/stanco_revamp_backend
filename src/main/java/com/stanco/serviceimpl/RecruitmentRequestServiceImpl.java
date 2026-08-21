@@ -12,28 +12,43 @@ import com.stanco.service.RecruitmentRequestService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RecruitmentRequestServiceImpl
                 implements RecruitmentRequestService {
 
         private final RecruitmentRequestRepository repository;
+
+        // =========================================================
+        // CREATE
+        // =========================================================
 
         @Override
         public RecruitmentRequestResponse create(
                         RecruitmentRequestRequest request,
                         String createdBy) {
 
+                // -----------------------------------------------------
+                // CHECK DUPLICATE REC REQ ID
+                // -----------------------------------------------------
+
                 if (repository.existsByRecReqID(
                                 request.getRecReqID())) {
 
                         throw new RuntimeException(
-                                        "Recruitment Request ID already exists");
+                                        "Recruitment Request ID already exists: "
+                                                        + request.getRecReqID());
                 }
+
+                // -----------------------------------------------------
+                // CREATE ENTITY
+                // -----------------------------------------------------
 
                 RecruitmentRequest recruitmentRequest = new RecruitmentRequest();
 
@@ -83,23 +98,27 @@ public class RecruitmentRequestServiceImpl
                                 request.getSalaryRangeAnnual());
 
                 recruitmentRequest.setRequestStatus(
-                                request.getRequestStatus() != null
-                                                ? request.getRequestStatus()
-                                                : "Open");
+                                request.getRequestStatus());
 
                 recruitmentRequest.setCloseDate(
                                 request.getCloseDate());
 
+                // =====================================================
+                // ALLOCATION
+                // =====================================================
+
                 recruitmentRequest.setAssignedStatus(
-                                request.getAssignedStatus() != null
-                                                ? request.getAssignedStatus()
-                                                : "Unassigned");
+                                "Unassigned");
 
                 recruitmentRequest.setAssignedTo(
-                                request.getAssignedTo());
+                                null);
 
                 recruitmentRequest.setAssignedDate(
-                                request.getAssignedDate());
+                                null);
+
+                // =====================================================
+                // OTHER FIELDS
+                // =====================================================
 
                 recruitmentRequest.setHeplRecruitmentRefNumber(
                                 request.getHeplRecruitmentRefNumber());
@@ -111,7 +130,7 @@ public class RecruitmentRequestServiceImpl
                                 createdBy);
 
                 recruitmentRequest.setModifiedBy(
-                                createdBy);
+                                null);
 
                 recruitmentRequest.setCreatedAt(
                                 LocalDateTime.now());
@@ -126,15 +145,21 @@ public class RecruitmentRequestServiceImpl
                                 request.getSubPositionTitle());
 
                 recruitmentRequest.setClosedBy(
-                                request.getClosedBy() != null
-                                                ? request.getClosedBy()
-                                                : "");
+                                request.getClosedBy());
+
+                // =====================================================
+                // SAVE
+                // =====================================================
 
                 RecruitmentRequest saved = repository.save(
                                 recruitmentRequest);
 
                 return mapToResponse(saved);
         }
+
+        // =========================================================
+        // GET ALL
+        // =========================================================
 
         @Override
         public List<RecruitmentRequestResponse> getAll() {
@@ -146,54 +171,83 @@ public class RecruitmentRequestServiceImpl
                                 .toList();
         }
 
+        // =========================================================
+        // GET BY ID
+        // =========================================================
+
         @Override
         public RecruitmentRequestResponse getById(
                         Long id) {
 
-                RecruitmentRequest request = repository
-                                .findById(id)
+                RecruitmentRequest recruitmentRequest = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                if (request.getDeleteStatus() != 0) {
+                // -----------------------------------------------------
+                // DO NOT RETURN DELETED RECORD
+                // -----------------------------------------------------
+
+                if (recruitmentRequest.getDeleteStatus() != null
+                                && recruitmentRequest.getDeleteStatus() == 1) {
 
                         throw new RuntimeException(
-                                        "Recruitment Request is deleted");
+                                        "Recruitment Request is deleted: "
+                                                        + id);
                 }
 
-                return mapToResponse(request);
+                return mapToResponse(
+                                recruitmentRequest);
         }
+
+        // =========================================================
+        // GET BY REC REQ ID
+        // =========================================================
 
         @Override
         public RecruitmentRequestResponse getByRecReqID(
                         String recReqID) {
 
-                RecruitmentRequest request = repository
-                                .findByRecReqID(recReqID)
+                RecruitmentRequest recruitmentRequest = repository.findByRecReqID(
+                                recReqID)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + recReqID));
 
-                if (request.getDeleteStatus() != 0) {
+                if (recruitmentRequest.getDeleteStatus() != null
+                                && recruitmentRequest.getDeleteStatus() == 1) {
 
                         throw new RuntimeException(
-                                        "Recruitment Request is deleted");
+                                        "Recruitment Request is deleted: "
+                                                        + recReqID);
                 }
 
-                return mapToResponse(request);
+                return mapToResponse(
+                                recruitmentRequest);
         }
 
+        // =========================================================
+        // GET MY REQUESTS
+        // =========================================================
+
         @Override
-        public List<RecruitmentRequestResponse> getMyRequests(String empID) {
+        public List<RecruitmentRequestResponse> getMyRequests(
+                        String empID) {
 
                 return repository
-                                .findByCreatedBy(empID)
+                                .findByAssignedTo(empID)
                                 .stream()
-                                .filter(request -> request.getDeleteStatus() == 0)
+                                .filter(request -> request.getDeleteStatus() == null
+                                                || request.getDeleteStatus() == 0)
+                                .filter(request -> "Assigned".equalsIgnoreCase(
+                                                request.getAssignedStatus()))
                                 .map(this::mapToResponse)
                                 .toList();
         }
+
+        // =========================================================
+        // UPDATE
+        // =========================================================
 
         @Override
         public RecruitmentRequestResponse update(
@@ -201,17 +255,33 @@ public class RecruitmentRequestServiceImpl
                         RecruitmentRequestRequest request,
                         String modifiedBy) {
 
-                RecruitmentRequest existing = repository
-                                .findById(id)
+                // -----------------------------------------------------
+                // FIND EXISTING RECORD
+                // -----------------------------------------------------
+
+                RecruitmentRequest existing = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                if (existing.getDeleteStatus() != 0) {
+                // -----------------------------------------------------
+                // PREVENT UPDATE OF DELETED RECORD
+                // -----------------------------------------------------
+
+                if (existing.getDeleteStatus() != null
+                                && existing.getDeleteStatus() == 1) {
 
                         throw new RuntimeException(
-                                        "Cannot update deleted request");
+                                        "Cannot update deleted Recruitment Request: "
+                                                        + id);
                 }
+
+                // =====================================================
+                // BASIC DATA
+                // =====================================================
+
+                existing.setRecReqID(
+                                request.getRecReqID());
 
                 existing.setRfhNo(
                                 request.getRfhNo());
@@ -261,14 +331,58 @@ public class RecruitmentRequestServiceImpl
                 existing.setCloseDate(
                                 request.getCloseDate());
 
-                existing.setAssignedStatus(
-                                request.getAssignedStatus());
+                // =====================================================
+                // ALLOCATION DATA
+                // =====================================================
 
-                existing.setAssignedTo(
-                                request.getAssignedTo());
+                /*
+                 * IMPORTANT:
+                 *
+                 * Allocate button frontend sends:
+                 *
+                 * assignedStatus = Assigned
+                 * assignedTo = recruiter ID
+                 * assignedDate = date
+                 *
+                 * So these values are updated here.
+                 */
 
-                existing.setAssignedDate(
-                                request.getAssignedDate());
+                if (request.getAssignedStatus() != null
+                                && !request
+                                                .getAssignedStatus()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        existing.setAssignedStatus(
+                                        request.getAssignedStatus());
+
+                }
+
+                if (request.getAssignedTo() != null
+                                && !request
+                                                .getAssignedTo()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        existing.setAssignedTo(
+                                        request.getAssignedTo());
+
+                }
+
+                if (request.getAssignedDate() != null
+                                && !request
+                                                .getAssignedDate()
+                                                .trim()
+                                                .isEmpty()) {
+
+                        existing.setAssignedDate(
+                                        request.getAssignedDate());
+
+                }
+
+                // =====================================================
+                // OTHER DATA
+                // =====================================================
 
                 existing.setHeplRecruitmentRefNumber(
                                 request.getHeplRecruitmentRefNumber());
@@ -282,39 +396,58 @@ public class RecruitmentRequestServiceImpl
                 existing.setClosedBy(
                                 request.getClosedBy());
 
+                // =====================================================
+                // AUDIT
+                // =====================================================
+
                 existing.setModifiedBy(
                                 modifiedBy);
 
                 existing.setUpdatedAt(
                                 LocalDateTime.now());
 
+                // =====================================================
+                // SAVE
+                // =====================================================
+
                 RecruitmentRequest updated = repository.save(existing);
 
                 return mapToResponse(updated);
         }
+
+        // =========================================================
+        // DELETE
+        // =========================================================
 
         @Override
         public void delete(
                         Long id,
                         String modifiedBy) {
 
-                RecruitmentRequest request = repository
-                                .findById(id)
+                RecruitmentRequest recruitmentRequest = repository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Recruitment Request not found: "
                                                                 + id));
 
-                request.setDeleteStatus(
-                                1);
+                // -----------------------------------------------------
+                // SOFT DELETE
+                // -----------------------------------------------------
 
-                request.setModifiedBy(
+                recruitmentRequest.setDeleteStatus(1);
+
+                recruitmentRequest.setModifiedBy(
                                 modifiedBy);
 
-                request.setUpdatedAt(
+                recruitmentRequest.setUpdatedAt(
                                 LocalDateTime.now());
 
-                repository.save(request);
+                repository.save(
+                                recruitmentRequest);
         }
+
+        // =========================================================
+        // ENTITY → RESPONSE
+        // =========================================================
 
         private RecruitmentRequestResponse mapToResponse(
                         RecruitmentRequest request) {

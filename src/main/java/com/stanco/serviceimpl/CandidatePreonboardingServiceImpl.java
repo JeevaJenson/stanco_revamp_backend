@@ -12,226 +12,220 @@ import com.stanco.service.CandidatePreonboardingService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CandidatePreonboardingServiceImpl
-        implements CandidatePreonboardingService {
+                implements CandidatePreonboardingService {
 
-    private final CandidatePreonboardingRepository repository;
+        private final CandidatePreonboardingRepository repository;
 
+        // =========================================================
+        // CREATE
+        // =========================================================
 
-    @Override
-    public CandidatePreonboardingResponse create(
-            CandidatePreonboardingRequest request) {
+        @Override
+        public CandidatePreonboardingResponse create(
+                        CandidatePreonboardingRequest request) {
 
-        CandidatePreonboarding preonboarding =
-                new CandidatePreonboarding();
+                CandidatePreonboarding record = new CandidatePreonboarding();
 
-        preonboarding.setEmpId(
-                request.getEmpId()
-        );
+                record.setEmpId(
+                                request.getEmpId());
 
-        preonboarding.setRecruiterId(
-                request.getRecruiterId()
-        );
+                record.setRecruiterId(
+                                request.getRecruiterId());
 
-        preonboarding.setPreonboardingProcess(
-                request.getPreonboardingProcess()
-        );
+                record.setPreonboardingProcess(
+                                request.getPreonboardingProcess());
 
-        preonboarding.setType(
-                request.getType()
-        );
+                record.setType(
+                                request.getType());
 
-        preonboarding.setDate(
-                request.getDate()
-        );
+                record.setDate(
+                                request.getDate());
 
-        preonboarding.setCreatedAt(
-                LocalDateTime.now()
-        );
+                LocalDateTime now = LocalDateTime.now();
 
-        preonboarding.setUpdatedAt(
-                LocalDateTime.now()
-        );
+                record.setCreatedAt(now);
 
-        CandidatePreonboarding saved =
-                repository.save(preonboarding);
+                record.setUpdatedAt(now);
 
-        return mapToResponse(saved);
-    }
+                CandidatePreonboarding saved = repository.save(record);
 
+                return mapToResponse(saved);
+        }
 
+        // =========================================================
+        // GET ALL
+        // =========================================================
 
-    @Override
-    public List<CandidatePreonboardingResponse>
-    getAll() {
+        @Override
+        public List<CandidatePreonboardingResponse> getAll() {
 
-        return repository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                return repository
+                                .findAll()
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
+        // =========================================================
+        // GET BY ID
+        // =========================================================
 
+        @Override
+        public CandidatePreonboardingResponse getById(
+                        Long id) {
 
-    @Override
-    public CandidatePreonboardingResponse
-    getById(Long id) {
+                CandidatePreonboarding record = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Pre-onboarding record not found: "
+                                                                + id));
 
-        CandidatePreonboarding preonboarding =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Pre-onboarding record not found: "
-                                                + id
-                                )
-                        );
+                return mapToResponse(record);
+        }
 
-        return mapToResponse(preonboarding);
-    }
+        // =========================================================
+        // GET BY EMPLOYEE
+        // =========================================================
 
+        @Override
+        public List<CandidatePreonboardingResponse> getByEmpId(
+                        String empId) {
 
+                return repository
+                                .findByEmpId(empId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-    @Override
-    public List<CandidatePreonboardingResponse>
-    getByEmpId(String empId) {
+        // =========================================================
+        // GET BY RECRUITER
+        // =========================================================
 
-        return repository.findByEmpId(empId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+        @Override
+        public List<CandidatePreonboardingResponse> getByRecruiterId(
+                        String recruiterId) {
 
+                return repository
+                                .findByRecruiterId(recruiterId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
+        // =========================================================
+        // GET BY PROCESS
+        // =========================================================
 
+        @Override
+        public List<CandidatePreonboardingResponse> getByPreonboardingProcess(
+                        String process) {
 
-    @Override
-    public List<CandidatePreonboardingResponse>
-    getByRecruiterId(String recruiterId) {
+                return repository
+                                .findByPreonboardingProcess(process)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-        return repository.findByRecruiterId(
-                        recruiterId
-                )
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+        // =========================================================
+        // GET BY TYPE
+        // =========================================================
 
+        @Override
+        public List<CandidatePreonboardingResponse> getByType(
+                        Integer type) {
 
+                return repository
+                                .findByType(type)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
 
-    @Override
-    public List<CandidatePreonboardingResponse>
-    getByPreonboardingProcess(
-            String process) {
+        // =========================================================
+        // UPDATE
+        // =========================================================
 
-        return repository
-                .findByPreonboardingProcess(process)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+        @Override
+        public CandidatePreonboardingResponse update(
+                        Long id,
+                        CandidatePreonboardingRequest request) {
 
+                CandidatePreonboarding record = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Pre-onboarding record not found: "
+                                                                + id));
 
+                record.setEmpId(
+                                request.getEmpId());
 
-    @Override
-    public List<CandidatePreonboardingResponse>
-    getByType(Integer type) {
+                record.setRecruiterId(
+                                request.getRecruiterId());
 
-        return repository.findByType(type)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+                record.setPreonboardingProcess(
+                                request.getPreonboardingProcess());
 
+                record.setType(
+                                request.getType());
 
-    @Override
-    public CandidatePreonboardingResponse update(
-            Long id,
-            CandidatePreonboardingRequest request) {
+                record.setDate(
+                                request.getDate());
 
-        CandidatePreonboarding preonboarding =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Pre-onboarding record not found: "
-                                                + id
-                                )
-                        );
+                record.setUpdatedAt(
+                                LocalDateTime.now());
 
-        preonboarding.setEmpId(
-                request.getEmpId()
-        );
+                CandidatePreonboarding updated = repository.save(record);
 
-        preonboarding.setRecruiterId(
-                request.getRecruiterId()
-        );
+                return mapToResponse(updated);
+        }
 
-        preonboarding.setPreonboardingProcess(
-                request.getPreonboardingProcess()
-        );
+        // =========================================================
+        // DELETE
+        // =========================================================
 
-        preonboarding.setType(
-                request.getType()
-        );
+        @Override
+        public void delete(Long id) {
 
-        preonboarding.setDate(
-                request.getDate()
-        );
+                CandidatePreonboarding record = repository.findById(id)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Pre-onboarding record not found: "
+                                                                + id));
 
-        preonboarding.setUpdatedAt(
-                LocalDateTime.now()
-        );
+                repository.delete(record);
+        }
 
-        CandidatePreonboarding updated =
-                repository.save(preonboarding);
+        // =========================================================
+        // MAPPING
+        // =========================================================
 
-        return mapToResponse(updated);
-    }
+        private CandidatePreonboardingResponse mapToResponse(
+                        CandidatePreonboarding record) {
 
+                return new CandidatePreonboardingResponse(
 
-    @Override
-    public void delete(Long id) {
+                                record.getId(),
 
-        CandidatePreonboarding preonboarding =
-                repository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Pre-onboarding record not found: "
-                                                + id
-                                )
-                        );
+                                record.getEmpId(),
 
-        repository.delete(preonboarding);
-    }
+                                record.getRecruiterId(),
 
+                                record.getPreonboardingProcess(),
 
+                                record.getType(),
 
-    private CandidatePreonboardingResponse
-    mapToResponse(
-            CandidatePreonboarding preonboarding) {
+                                record.getDate(),
 
-        return new CandidatePreonboardingResponse(
+                                record.getCreatedAt(),
 
-                preonboarding.getId(),
-
-                preonboarding.getEmpId(),
-
-                preonboarding.getRecruiterId(),
-
-                preonboarding.getPreonboardingProcess(),
-
-                preonboarding.getType(),
-
-                preonboarding.getDate(),
-
-                preonboarding.getCreatedAt(),
-
-                preonboarding.getUpdatedAt()
-        );
-    }
+                                record.getUpdatedAt());
+        }
 }

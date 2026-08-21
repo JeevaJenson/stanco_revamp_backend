@@ -22,136 +22,86 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruitmentRequestController {
 
-    private final RecruitmentRequestService service;
+        private final RecruitmentRequestService service;
 
+        @PostMapping
+        public ResponseEntity<RecruitmentRequestResponse> create(
+                        @Valid @RequestBody RecruitmentRequestRequest request,
+                        Authentication authentication) {
 
+                String empID = authentication.getName();
 
+                return ResponseEntity.ok(
+                                service.create(
+                                                request,
+                                                empID));
+        }
 
-    @PostMapping
-    public ResponseEntity<RecruitmentRequestResponse> create(
+        @GetMapping
+        public ResponseEntity<List<RecruitmentRequestResponse>> getAll() {
 
-            @Valid
-            @RequestBody
-            RecruitmentRequestRequest request,
+                return ResponseEntity.ok(
+                                service.getAll());
+        }
 
-            Authentication authentication) {
+        @GetMapping("/{id}")
+        public ResponseEntity<RecruitmentRequestResponse> getById(
+                        @PathVariable Long id) {
 
+                return ResponseEntity.ok(
+                                service.getById(id));
+        }
 
-        String empID =
-                authentication.getName();
+        @GetMapping("/request/{recReqID}")
+        public ResponseEntity<RecruitmentRequestResponse> getByRecReqID(
+                        @PathVariable String recReqID) {
 
+                return ResponseEntity.ok(
+                                service.getByRecReqID(recReqID));
+        }
 
-        return ResponseEntity.ok(
-                service.create(
-                        request,
-                        empID
-                )
-        );
-    }
+        @GetMapping("/my")
+        public ResponseEntity<List<RecruitmentRequestResponse>> getMyRequests(
+                        Authentication authentication) {
 
+                String empID = authentication.getName();
 
-    @GetMapping
-    public ResponseEntity<
-            List<RecruitmentRequestResponse>>
-    getAll() {
+                return ResponseEntity.ok(
+                                service.getMyRequests(empID));
+        }
 
-        return ResponseEntity.ok(
-                service.getAll()
-        );
-    }
+        @PutMapping("/{id}")
+        public ResponseEntity<RecruitmentRequestResponse> update(
 
+                        @PathVariable Long id,
 
+                        @Valid @RequestBody RecruitmentRequestRequest request,
 
-    @GetMapping("/{id}")
-    public ResponseEntity<RecruitmentRequestResponse>
-    getById(
-            @PathVariable Long id) {
+                        Authentication authentication) {
 
-        return ResponseEntity.ok(
-                service.getById(id)
-        );
-    }
+                String empID = authentication.getName();
 
+                return ResponseEntity.ok(
+                                service.update(
+                                                id,
+                                                request,
+                                                empID));
+        }
 
+        @DeleteMapping("/{id}")
+        public ResponseEntity<String> delete(
 
-    @GetMapping("/request/{recReqID}")
-    public ResponseEntity<RecruitmentRequestResponse>
-    getByRecReqID(
-            @PathVariable String recReqID) {
+                        @PathVariable Long id,
 
-        return ResponseEntity.ok(
-                service.getByRecReqID(
-                        recReqID
-                )
-        );
-    }
+                        Authentication authentication) {
 
+                String empID = authentication.getName();
 
+                service.delete(
+                                id,
+                                empID);
 
-    @GetMapping("/my")
-    public ResponseEntity<
-            List<RecruitmentRequestResponse>>
-    getMyRequests(
-            Authentication authentication) {
-
-        String empID =
-                authentication.getName();
-
-
-        return ResponseEntity.ok(
-                service.getMyRequests(empID)
-        );
-    }
-
-
-
-    @PutMapping("/{id}")
-    public ResponseEntity<RecruitmentRequestResponse>
-    update(
-
-            @PathVariable Long id,
-
-            @Valid
-            @RequestBody
-            RecruitmentRequestRequest request,
-
-            Authentication authentication) {
-
-
-        String empID =
-                authentication.getName();
-
-
-        return ResponseEntity.ok(
-                service.update(
-                        id,
-                        request,
-                        empID
-                )
-        );
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(
-
-            @PathVariable Long id,
-
-            Authentication authentication) {
-
-
-        String empID =
-                authentication.getName();
-
-
-        service.delete(
-                id,
-                empID
-        );
-
-
-        return ResponseEntity.ok(
-                "Recruitment Request deleted successfully"
-        );
-    }
+                return ResponseEntity.ok(
+                                "Recruitment Request deleted successfully");
+        }
 }

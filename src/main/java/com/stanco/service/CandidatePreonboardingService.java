@@ -7,39 +7,29 @@ import java.util.List;
 
 public interface CandidatePreonboardingService {
 
-    CandidatePreonboardingResponse create(
-            CandidatePreonboardingRequest request
-    );
+        CandidatePreonboardingResponse create(
+                        CandidatePreonboardingRequest request);
 
-    List<CandidatePreonboardingResponse> getAll();
+        List<CandidatePreonboardingResponse> getAll();
 
-    CandidatePreonboardingResponse getById(
-            Long id
-    );
+        CandidatePreonboardingResponse getById(
+                        Long id);
 
-    List<CandidatePreonboardingResponse> getByEmpId(
-            String empId
-    );
+        List<CandidatePreonboardingResponse> getByEmpId(
+                        String empId);
 
-    List<CandidatePreonboardingResponse> getByRecruiterId(
-            String recruiterId
-    );
+        List<CandidatePreonboardingResponse> getByRecruiterId(
+                        String recruiterId);
 
-    List<CandidatePreonboardingResponse>
-    getByPreonboardingProcess(
-            String process
-    );
+        List<CandidatePreonboardingResponse> getByPreonboardingProcess(
+                        String process);
 
-    List<CandidatePreonboardingResponse> getByType(
-            Integer type
-    );
+        List<CandidatePreonboardingResponse> getByType(
+                        Integer type);
 
-    CandidatePreonboardingResponse update(
-            Long id,
-            CandidatePreonboardingRequest request
-    );
+        CandidatePreonboardingResponse update(
+                        Long id,
+                        CandidatePreonboardingRequest request);
 
-    void delete(
-            Long id
-    );
+        void delete(Long id);
 }
