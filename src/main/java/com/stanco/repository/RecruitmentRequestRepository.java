@@ -1,6 +1,7 @@
 package com.stanco.repository;
 
 import com.stanco.entity.RecruitmentRequest;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

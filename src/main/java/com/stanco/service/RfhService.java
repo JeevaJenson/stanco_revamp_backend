@@ -17,7 +17,8 @@ public interface RfhService {
 
         RfhResponse getByResId(String resId);
 
-        List<RfhResponse> getMyRfh(String requestBy);
+        List<RfhResponse> getMyRfh(
+                        String requestBy);
 
         RfhResponse update(
                         Long id,

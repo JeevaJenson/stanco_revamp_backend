@@ -3,7 +3,9 @@ package com.stanco.serviceimpl;
 import com.stanco.dto.request.RfhRequest;
 import com.stanco.dto.response.RfhResponse;
 import com.stanco.entity.Rfh;
+import com.stanco.entity.RecruitmentRequest;
 import com.stanco.repository.RfhRepository;
+import com.stanco.repository.RecruitmentRequestRepository;
 import com.stanco.service.RfhService;
 
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,10 +22,13 @@ import java.util.List;
 @Transactional
 public class RfhServiceImpl implements RfhService {
 
-        private final RfhRepository repository;
+        private final RfhRepository rfhRepository;
+
+        private final RecruitmentRequestRepository recruitmentRequestRepository;
 
         // =========================================================
         // CREATE RFH
+        // RFH + RECRUITMENT REQUEST
         // =========================================================
 
         @Override
@@ -31,25 +37,32 @@ public class RfhServiceImpl implements RfhService {
                         String requestBy) {
 
                 // =====================================================
-                // CREATE ENTITY
+                // 1. GENERATE RES ID
+                // Example: RES0001
+                // =====================================================
+
+                String resId = generateResId();
+
+                // =====================================================
+                // 2. GENERATE RFH NUMBER
+                // Example: RFH0001
+                // =====================================================
+
+                String rfhNumber = generateRfhNumber();
+
+                // =====================================================
+                // 3. CREATE RFH ENTITY
                 // =====================================================
 
                 Rfh rfh = new Rfh();
 
                 // =====================================================
-                // AUTO GENERATE RES ID
-                // Example: RES0001
+                // AUTO GENERATED VALUES
                 // =====================================================
 
-                rfh.setResId(generateResId());
+                rfh.setResId(resId);
 
-                // =====================================================
-                // AUTO GENERATE RFH NUMBER
-                // ticketNumber stores RFH Number
-                // Example: RFH0001
-                // =====================================================
-
-                rfh.setTicketNumber(generateRfhNumber());
+                rfh.setTicketNumber(rfhNumber);
 
                 // =====================================================
                 // BASIC DETAILS
@@ -84,7 +97,7 @@ public class RfhServiceImpl implements RfhService {
                                 request.getApprovedBy());
 
                 // =====================================================
-                // REQUEST DETAILS
+                // BASIC REQUEST DETAILS
                 // =====================================================
 
                 rfh.setRequestType(
@@ -227,33 +240,159 @@ public class RfhServiceImpl implements RfhService {
                                 request.getReporterId());
 
                 // =====================================================
-                // SAVE
+                // 4. SAVE RFH
                 // =====================================================
 
-                Rfh saved = repository.save(rfh);
+                Rfh savedRfh = rfhRepository.save(rfh);
 
-                return mapToResponse(saved);
+                // =====================================================
+                // 5. CREATE RECRUITMENT REQUEST
+                // =====================================================
+
+                RecruitmentRequest recruitmentRequest = new RecruitmentRequest();
+
+                // =====================================================
+                // AUTO GENERATE REC REQUEST ID
+                // Example: REC0001
+                // =====================================================
+
+                recruitmentRequest.setRecReqID(
+                                generateRecruitmentRequestId());
+
+                // =====================================================
+                // LINK RFH NUMBER
+                // recruitment_requests.rfh_no = RFH0001
+                // =====================================================
+
+                recruitmentRequest.setRfhNo(
+                                savedRfh.getTicketNumber());
+
+                // =====================================================
+                // COPY RFH DATA
+                // =====================================================
+
+                recruitmentRequest.setPositionTitle(
+                                request.getPositionTitle());
+
+                recruitmentRequest.setNoOfPosition(
+                                request.getNoOfPositions());
+
+                recruitmentRequest.setBusiness(
+                                request.getBusiness());
+
+                recruitmentRequest.setDivision(
+                                request.getDivision());
+
+                recruitmentRequest.setFunction(
+                                request.getFunction());
+
+                recruitmentRequest.setLocation(
+                                request.getLocation());
+
+                recruitmentRequest.setSalaryRange(
+                                request.getSalaryRange());
+
+                recruitmentRequest.setSalaryRangeAnnual(
+                                request.getSalaryRangeAnnual());
+
+                // =====================================================
+                // DATE
+                // =====================================================
+
+                recruitmentRequest.setOpenDate(
+                                parseDate(request.getRequestDate()));
+
+                // =====================================================
+                // STATUS
+                // =====================================================
+
+                recruitmentRequest.setRequestStatus(
+                                "OPEN");
+
+                recruitmentRequest.setAssignedStatus(
+                                "Unassigned");
+
+                recruitmentRequest.setAssignedTo(
+                                null);
+
+                recruitmentRequest.setAssignedDate(
+                                null);
+
+                // =====================================================
+                // OTHER RECRUITMENT FIELDS
+                // =====================================================
+
+                recruitmentRequest.setBand(null);
+
+                recruitmentRequest.setCriticalPosition(null);
+
+                recruitmentRequest.setBillingStatus(null);
+
+                recruitmentRequest.setInterviewer(null);
+
+                recruitmentRequest.setCloseDate(null);
+
+                recruitmentRequest.setHeplRecruitmentRefNumber(null);
+
+                recruitmentRequest.setActionForTheDayStatus(null);
+
+                recruitmentRequest.setSubPositionTitle(null);
+
+                recruitmentRequest.setClosedBy(null);
+
+                // =====================================================
+                // AUDIT
+                // =====================================================
+
+                recruitmentRequest.setCreatedBy(
+                                requestBy);
+
+                recruitmentRequest.setModifiedBy(
+                                requestBy);
+
+                recruitmentRequest.setCreatedAt(
+                                LocalDateTime.now());
+
+                recruitmentRequest.setUpdatedAt(
+                                LocalDateTime.now());
+
+                recruitmentRequest.setDeleteStatus(0);
+
+                // =====================================================
+                // 6. SAVE RECRUITMENT REQUEST
+                // =====================================================
+
+                recruitmentRequestRepository.save(
+                                recruitmentRequest);
+
+                // =====================================================
+                // 7. RETURN RFH RESPONSE
+                // =====================================================
+
+                return mapToResponse(savedRfh);
         }
 
         // =========================================================
         // GENERATE RES ID
-        // Example:
         // RES0001
         // RES0002
-        // RES0003
         // =========================================================
 
         private String generateResId() {
 
-                long number = repository.count() + 1;
+                long number = rfhRepository.count() + 1;
 
-                String resId = "RES" + String.format("%02d", number);
+                String resId = "RES" + String.format(
+                                "%04d",
+                                number);
 
-                while (repository.existsByResId(resId)) {
+                while (rfhRepository.existsByResId(resId)) {
 
                         number++;
 
-                        resId = "RES" + String.format("%02d", number);
+                        resId = "RES" + String.format(
+                                        "%04d",
+                                        number);
                 }
 
                 return resId;
@@ -261,42 +400,93 @@ public class RfhServiceImpl implements RfhService {
 
         // =========================================================
         // GENERATE RFH NUMBER
-        // Example:
         // RFH0001
         // RFH0002
-        // RFH0003
-        //
-        // Stored in ticketNumber column
         // =========================================================
 
         private String generateRfhNumber() {
 
-                long number = repository.count() + 1;
+                long number = rfhRepository.count() + 1;
 
-                String rfhNumber = "RFH" + String.format("%04d", number);
+                String rfhNumber = "RFH" + String.format(
+                                "%04d",
+                                number);
 
-                while (repository.existsByTicketNumber(rfhNumber)) {
+                while (rfhRepository.existsByTicketNumber(
+                                rfhNumber)) {
 
                         number++;
 
-                        rfhNumber = "RFH" + String.format("%04d", number);
+                        rfhNumber = "RFH" + String.format(
+                                        "%04d",
+                                        number);
                 }
 
                 return rfhNumber;
         }
 
         // =========================================================
-        // GET ALL RFH
+        // GENERATE RECRUITMENT REQUEST ID
+        // REC0001
+        // REC0002
+        // =========================================================
+
+        private String generateRecruitmentRequestId() {
+
+                long number = recruitmentRequestRepository.count() + 1;
+
+                String recReqID = "REC" + String.format(
+                                "%04d",
+                                number);
+
+                while (recruitmentRequestRepository
+                                .existsByRecReqID(recReqID)) {
+
+                        number++;
+
+                        recReqID = "REC" + String.format(
+                                        "%04d",
+                                        number);
+                }
+
+                return recReqID;
+        }
+
+        // =========================================================
+        // DATE CONVERSION
+        // =========================================================
+
+        private LocalDate parseDate(
+                        String date) {
+
+                if (date == null ||
+                                date.trim().isEmpty()) {
+
+                        return LocalDate.now();
+                }
+
+                try {
+
+                        return LocalDate.parse(date);
+
+                } catch (Exception e) {
+
+                        return LocalDate.now();
+                }
+        }
+
+        // =========================================================
+        // GET ALL
         // =========================================================
 
         @Override
         @Transactional(readOnly = true)
         public List<RfhResponse> getAll() {
 
-                return repository.findAll()
+                return rfhRepository.findAll()
                                 .stream()
-                                .filter(rfh -> rfh.getDeleteStatus() == null
-                                                || rfh.getDeleteStatus() == 0)
+                                .filter(rfh -> rfh.getDeleteStatus() == null ||
+                                                rfh.getDeleteStatus() == 0)
                                 .map(this::mapToResponse)
                                 .toList();
         }
@@ -307,9 +497,10 @@ public class RfhServiceImpl implements RfhService {
 
         @Override
         @Transactional(readOnly = true)
-        public RfhResponse getById(Long id) {
+        public RfhResponse getById(
+                        Long id) {
 
-                Rfh rfh = repository.findById(id)
+                Rfh rfh = rfhRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "RFH not found: " + id));
 
@@ -325,8 +516,7 @@ public class RfhServiceImpl implements RfhService {
         public RfhResponse getByResId(
                         String resId) {
 
-                Rfh rfh = repository
-                                .findByResId(resId)
+                Rfh rfh = rfhRepository.findByResId(resId)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "RFH not found with RES ID: "
                                                                 + resId));
@@ -343,11 +533,11 @@ public class RfhServiceImpl implements RfhService {
         public List<RfhResponse> getMyRfh(
                         String requestBy) {
 
-                return repository
+                return rfhRepository
                                 .findByRequestBy(requestBy)
                                 .stream()
-                                .filter(rfh -> rfh.getDeleteStatus() == null
-                                                || rfh.getDeleteStatus() == 0)
+                                .filter(rfh -> rfh.getDeleteStatus() == null ||
+                                                rfh.getDeleteStatus() == 0)
                                 .map(this::mapToResponse)
                                 .toList();
         }
@@ -361,20 +551,17 @@ public class RfhServiceImpl implements RfhService {
                         Long id,
                         RfhRequest request) {
 
-                Rfh rfh = repository.findById(id)
+                Rfh rfh = rfhRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "RFH not found: " + id));
 
                 // =====================================================
-                // DO NOT CHANGE AUTO GENERATED VALUES
+                // AUTO GENERATED VALUES
+                // DO NOT CHANGE
                 // =====================================================
 
-                // RES ID remains same
-                // RFH Number remains same
-
-                // =====================================================
-                // BASIC DETAILS
-                // =====================================================
+                // resId remains same
+                // ticketNumber remains same
 
                 rfh.setRollsOption(
                                 request.getRollsOption());
@@ -394,19 +581,11 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReportEmail(
                                 request.getReportEmail());
 
-                // =====================================================
-                // REQUEST RAISED BY
-                // =====================================================
-
                 rfh.setCostCenter(
                                 request.getCostCenter());
 
                 rfh.setApprovedBy(
                                 request.getApprovedBy());
-
-                // =====================================================
-                // REQUEST DETAILS
-                // =====================================================
 
                 rfh.setRequestType(
                                 request.getRequestType());
@@ -422,10 +601,6 @@ public class RfhServiceImpl implements RfhService {
 
                 rfh.setClientName(
                                 request.getClientName());
-
-                // =====================================================
-                // POSITION DETAILS
-                // =====================================================
 
                 rfh.setPositionTitle(
                                 request.getPositionTitle());
@@ -451,10 +626,6 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setNoOfPositions(
                                 request.getNoOfPositions());
 
-                // =====================================================
-                // JOB REQUIREMENTS
-                // =====================================================
-
                 rfh.setJdRoles(
                                 request.getJdRoles());
 
@@ -467,10 +638,6 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setGoodSkill(
                                 request.getGoodSkill());
 
-                // =====================================================
-                // COMPENSATION
-                // =====================================================
-
                 rfh.setExperience(
                                 request.getExperience());
 
@@ -480,26 +647,14 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setSalaryRangeAnnual(
                                 request.getSalaryRangeAnnual());
 
-                // =====================================================
-                // CATEGORY
-                // =====================================================
-
                 rfh.setEmpCategory(
                                 request.getEmpCategory());
 
                 rfh.setType(
                                 request.getType());
 
-                // =====================================================
-                // ADDITIONAL
-                // =====================================================
-
                 rfh.setAnySpecific(
                                 request.getAnySpecific());
-
-                // =====================================================
-                // OTHER FIELDS
-                // =====================================================
 
                 rfh.setDeleteRemark(
                                 request.getDeleteRemark());
@@ -537,18 +692,13 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReporterId(
                                 request.getReporterId());
 
-                // =====================================================
-                // SAVE UPDATED RFH
-                // =====================================================
-
-                Rfh updated = repository.save(rfh);
+                Rfh updated = rfhRepository.save(rfh);
 
                 return mapToResponse(updated);
         }
 
         // =========================================================
-        // DELETE RFH
-        // SOFT DELETE
+        // DELETE
         // =========================================================
 
         @Override
@@ -556,7 +706,7 @@ public class RfhServiceImpl implements RfhService {
                         Long id,
                         String remark) {
 
-                Rfh rfh = repository.findById(id)
+                Rfh rfh = rfhRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "RFH not found: " + id));
 
@@ -564,7 +714,7 @@ public class RfhServiceImpl implements RfhService {
 
                 rfh.setDeleteRemark(remark);
 
-                repository.save(rfh);
+                rfhRepository.save(rfh);
         }
 
         // =========================================================
@@ -577,101 +727,53 @@ public class RfhServiceImpl implements RfhService {
                 return new RfhResponse(
 
                                 rfh.getId(),
-
                                 rfh.getResId(),
-
                                 rfh.getTicketNumber(),
-
                                 rfh.getRollsOption(),
-
                                 rfh.getName(),
-
                                 rfh.getMobile(),
-
                                 rfh.getEmail(),
-
                                 rfh.getPositionReports(),
-
                                 rfh.getReportEmail(),
-
                                 rfh.getCostCenter(),
-
                                 rfh.getApprovedBy(),
-
                                 rfh.getRequestType(),
-
                                 rfh.getReplacementOf(),
-
                                 rfh.getApprovalHire(),
-
                                 rfh.getPositionTitle(),
-
                                 rfh.getLocation(),
-
                                 rfh.getLocationPreferred(),
-
                                 rfh.getBusiness(),
-
                                 rfh.getVertical(),
-
                                 rfh.getDivision(),
-
                                 rfh.getFunction(),
-
                                 rfh.getNoOfPositions(),
-
                                 rfh.getJdRoles(),
-
                                 rfh.getQualification(),
-
                                 rfh.getEssentialSkill(),
-
                                 rfh.getGoodSkill(),
-
                                 rfh.getExperience(),
-
                                 rfh.getSalaryRange(),
-
                                 rfh.getSalaryRangeAnnual(),
-
                                 rfh.getEmpCategory(),
-
                                 rfh.getType(),
-
                                 rfh.getAnySpecific(),
-
                                 rfh.getCreatedDate(),
-
                                 rfh.getDeleteStatus(),
-
                                 rfh.getDeleteRemark(),
-
                                 rfh.getApprovalHirePath(),
-
                                 rfh.getRequestDate(),
-
                                 rfh.getRequestBy(),
-
                                 rfh.getApproveDate(),
-
                                 rfh.getDepartment(),
-
                                 rfh.getDesignation(),
-
                                 rfh.getTenDoj(),
-
                                 rfh.getAttendanceFormat(),
-
                                 rfh.getWeekOff(),
-
                                 rfh.getCkSupervisior(),
-
                                 rfh.getCkMail(),
-
                                 rfh.getApproverId(),
-
                                 rfh.getReporterId(),
-
                                 rfh.getClientName());
         }
 }
