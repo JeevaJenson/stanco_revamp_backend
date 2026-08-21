@@ -30,32 +30,30 @@ public class RfhServiceImpl implements RfhService {
                         RfhRequest request,
                         String requestBy) {
 
-                // -----------------------------------------------------
-                // Ticket Number check
-                // -----------------------------------------------------
-
-                if (request.getTicketNumber() != null
-                                && !request.getTicketNumber().trim().isEmpty()
-                                && repository.existsByTicketNumber(
-                                                request.getTicketNumber().trim())) {
-
-                        throw new RuntimeException(
-                                        "Ticket Number already exists: "
-                                                        + request.getTicketNumber());
-                }
-
-                // -----------------------------------------------------
-                // Create Entity
-                // -----------------------------------------------------
+                // =====================================================
+                // CREATE ENTITY
+                // =====================================================
 
                 Rfh rfh = new Rfh();
 
-                // IMPORTANT:
-                // RES ID generated automatically by backend
+                // =====================================================
+                // AUTO GENERATE RES ID
+                // Example: RES0001
+                // =====================================================
+
                 rfh.setResId(generateResId());
 
-                rfh.setTicketNumber(
-                                emptyToNull(request.getTicketNumber()));
+                // =====================================================
+                // AUTO GENERATE RFH NUMBER
+                // ticketNumber stores RFH Number
+                // Example: RFH0001
+                // =====================================================
+
+                rfh.setTicketNumber(generateRfhNumber());
+
+                // =====================================================
+                // BASIC DETAILS
+                // =====================================================
 
                 rfh.setRollsOption(
                                 request.getRollsOption());
@@ -75,11 +73,19 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReportEmail(
                                 request.getReportEmail());
 
+                // =====================================================
+                // REQUEST RAISED BY
+                // =====================================================
+
                 rfh.setCostCenter(
                                 request.getCostCenter());
 
                 rfh.setApprovedBy(
                                 request.getApprovedBy());
+
+                // =====================================================
+                // REQUEST DETAILS
+                // =====================================================
 
                 rfh.setRequestType(
                                 request.getRequestType());
@@ -89,6 +95,16 @@ public class RfhServiceImpl implements RfhService {
 
                 rfh.setApprovalHire(
                                 request.getApprovalHire());
+
+                rfh.setRequestDate(
+                                request.getRequestDate());
+
+                rfh.setClientName(
+                                request.getClientName());
+
+                // =====================================================
+                // POSITION DETAILS
+                // =====================================================
 
                 rfh.setPositionTitle(
                                 request.getPositionTitle());
@@ -102,8 +118,6 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setBusiness(
                                 request.getBusiness());
 
-                // NO BAND
-
                 rfh.setVertical(
                                 request.getVertical());
 
@@ -115,6 +129,10 @@ public class RfhServiceImpl implements RfhService {
 
                 rfh.setNoOfPositions(
                                 request.getNoOfPositions());
+
+                // =====================================================
+                // JOB REQUIREMENTS
+                // =====================================================
 
                 rfh.setJdRoles(
                                 request.getJdRoles());
@@ -128,6 +146,10 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setGoodSkill(
                                 request.getGoodSkill());
 
+                // =====================================================
+                // COMPENSATION
+                // =====================================================
+
                 rfh.setExperience(
                                 request.getExperience());
 
@@ -137,11 +159,19 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setSalaryRangeAnnual(
                                 request.getSalaryRangeAnnual());
 
+                // =====================================================
+                // CATEGORY
+                // =====================================================
+
                 rfh.setEmpCategory(
                                 request.getEmpCategory());
 
                 rfh.setType(
                                 request.getType());
+
+                // =====================================================
+                // ADDITIONAL
+                // =====================================================
 
                 rfh.setAnySpecific(
                                 request.getAnySpecific());
@@ -162,9 +192,6 @@ public class RfhServiceImpl implements RfhService {
                                 request.getApprovalHirePath() != null
                                                 ? request.getApprovalHirePath()
                                                 : 0);
-
-                rfh.setRequestDate(
-                                request.getRequestDate());
 
                 rfh.setRequestBy(
                                 requestBy);
@@ -199,9 +226,6 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReporterId(
                                 request.getReporterId());
 
-                rfh.setClientName(
-                                request.getClientName());
-
                 // =====================================================
                 // SAVE
                 // =====================================================
@@ -213,43 +237,56 @@ public class RfhServiceImpl implements RfhService {
 
         // =========================================================
         // GENERATE RES ID
+        // Example:
+        // RES0001
+        // RES0002
+        // RES0003
         // =========================================================
 
         private String generateResId() {
 
                 long number = repository.count() + 1;
 
-                String resId = "RFH" + String.format("%04d", number);
+                String resId = "RES" + String.format("%02d", number);
 
                 while (repository.existsByResId(resId)) {
 
                         number++;
 
-                        resId = "RFH" + String.format("%04d", number);
+                        resId = "RES" + String.format("%02d", number);
                 }
 
                 return resId;
         }
 
         // =========================================================
-        // EMPTY STRING -> NULL
+        // GENERATE RFH NUMBER
+        // Example:
+        // RFH0001
+        // RFH0002
+        // RFH0003
+        //
+        // Stored in ticketNumber column
         // =========================================================
 
-        private String emptyToNull(String value) {
+        private String generateRfhNumber() {
 
-                if (value == null) {
-                        return null;
+                long number = repository.count() + 1;
+
+                String rfhNumber = "RFH" + String.format("%04d", number);
+
+                while (repository.existsByTicketNumber(rfhNumber)) {
+
+                        number++;
+
+                        rfhNumber = "RFH" + String.format("%04d", number);
                 }
 
-                if (value.trim().isEmpty()) {
-                        return null;
-                }
-
-                return value.trim();
+                return rfhNumber;
         }
 
         // =========================================================
-        // GET ALL
+        // GET ALL RFH
         // =========================================================
 
         @Override
@@ -328,24 +365,16 @@ public class RfhServiceImpl implements RfhService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "RFH not found: " + id));
 
-                // RES ID should NOT be changed.
-                // It was generated during CREATE.
+                // =====================================================
+                // DO NOT CHANGE AUTO GENERATED VALUES
+                // =====================================================
 
-                if (request.getTicketNumber() != null
-                                && !request.getTicketNumber()
-                                                .equals(rfh.getTicketNumber())) {
+                // RES ID remains same
+                // RFH Number remains same
 
-                        if (repository.existsByTicketNumber(
-                                        request.getTicketNumber())) {
-
-                                throw new RuntimeException(
-                                                "Ticket Number already exists: "
-                                                                + request.getTicketNumber());
-                        }
-
-                        rfh.setTicketNumber(
-                                        request.getTicketNumber());
-                }
+                // =====================================================
+                // BASIC DETAILS
+                // =====================================================
 
                 rfh.setRollsOption(
                                 request.getRollsOption());
@@ -365,11 +394,19 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReportEmail(
                                 request.getReportEmail());
 
+                // =====================================================
+                // REQUEST RAISED BY
+                // =====================================================
+
                 rfh.setCostCenter(
                                 request.getCostCenter());
 
                 rfh.setApprovedBy(
                                 request.getApprovedBy());
+
+                // =====================================================
+                // REQUEST DETAILS
+                // =====================================================
 
                 rfh.setRequestType(
                                 request.getRequestType());
@@ -379,6 +416,16 @@ public class RfhServiceImpl implements RfhService {
 
                 rfh.setApprovalHire(
                                 request.getApprovalHire());
+
+                rfh.setRequestDate(
+                                request.getRequestDate());
+
+                rfh.setClientName(
+                                request.getClientName());
+
+                // =====================================================
+                // POSITION DETAILS
+                // =====================================================
 
                 rfh.setPositionTitle(
                                 request.getPositionTitle());
@@ -404,6 +451,10 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setNoOfPositions(
                                 request.getNoOfPositions());
 
+                // =====================================================
+                // JOB REQUIREMENTS
+                // =====================================================
+
                 rfh.setJdRoles(
                                 request.getJdRoles());
 
@@ -416,6 +467,10 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setGoodSkill(
                                 request.getGoodSkill());
 
+                // =====================================================
+                // COMPENSATION
+                // =====================================================
+
                 rfh.setExperience(
                                 request.getExperience());
 
@@ -425,23 +480,32 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setSalaryRangeAnnual(
                                 request.getSalaryRangeAnnual());
 
+                // =====================================================
+                // CATEGORY
+                // =====================================================
+
                 rfh.setEmpCategory(
                                 request.getEmpCategory());
 
                 rfh.setType(
                                 request.getType());
 
+                // =====================================================
+                // ADDITIONAL
+                // =====================================================
+
                 rfh.setAnySpecific(
                                 request.getAnySpecific());
+
+                // =====================================================
+                // OTHER FIELDS
+                // =====================================================
 
                 rfh.setDeleteRemark(
                                 request.getDeleteRemark());
 
                 rfh.setApprovalHirePath(
                                 request.getApprovalHirePath());
-
-                rfh.setRequestDate(
-                                request.getRequestDate());
 
                 rfh.setApproveDate(
                                 request.getApproveDate());
@@ -473,8 +537,9 @@ public class RfhServiceImpl implements RfhService {
                 rfh.setReporterId(
                                 request.getReporterId());
 
-                rfh.setClientName(
-                                request.getClientName());
+                // =====================================================
+                // SAVE UPDATED RFH
+                // =====================================================
 
                 Rfh updated = repository.save(rfh);
 
@@ -482,7 +547,8 @@ public class RfhServiceImpl implements RfhService {
         }
 
         // =========================================================
-        // DELETE
+        // DELETE RFH
+        // SOFT DELETE
         // =========================================================
 
         @Override
